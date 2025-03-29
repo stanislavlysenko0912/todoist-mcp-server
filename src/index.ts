@@ -57,6 +57,10 @@ export async function main() {
         const transport = new StdioServerTransport()
         await server.connect(transport)
 
+
+
+        process.stdin.resume()
+
         log('Server connected and running')
     } catch (error) {
         log('Fatal error:', error)
