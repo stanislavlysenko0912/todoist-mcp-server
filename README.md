@@ -1,8 +1,14 @@
 <div align="center">
-  <h1></h1>
-  <img src="https://static-00.iconduck.com/assets.00/todoist-icon-512x512-v3a6dxo9.png" width="120"/>
-  <h1>Todoist MCP Server</h1>
-  <p>A Model Context Protocol (MCP) server implementation that integrates Claude and other AI assistants with Todoist, enabling natural language task management.</p>
+    <img src="https://static-00.iconduck.com/assets.00/todoist-icon-512x512-v3a6dxo9.png" width="120"/>
+    <h1>Todoist MCP Server</h1>
+    <p>A Model Context Protocol (MCP) server implementation that integrates Claude and other AI assistants with Todoist, enabling natural language task management.</p>
+    <div>
+        <img src="https://img.shields.io/badge/claude-mcp-blue" alt="MCP Server">
+        <img src="https://img.shields.io/badge/todoist-mcp-orange" alt="Todoist Integration">
+        <a href="https://www.npmjs.com/package/todoist-mcp" target="_blank">
+            <img src="https://img.shields.io/npm/dt/todoist-mcp.svg" alt="npm downloads">
+        </a>
+    </div>
 </div>
 
 ## Features
