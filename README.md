@@ -134,3 +134,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 ## Issues and Support
 
 If you encounter any issues or need support, please file an issue on the GitHub repository.
+
+<a href="https://glama.ai/mcp/servers/@stanislavlysenko0912/todoist-mcp-server">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@stanislavlysenko0912/todoist-mcp-server/badge" />
+</a>
