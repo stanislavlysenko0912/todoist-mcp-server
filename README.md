@@ -6,7 +6,7 @@
         <img src="https://img.shields.io/badge/claude-mcp-blue" alt="MCP Server">
         <img src="https://img.shields.io/badge/todoist-mcp-orange" alt="Todoist Integration">
         <a href="https://www.npmjs.com/package/todoist-mcp" target="_blank">
-            <img src="https://img.shields.io/npm/dt/todoist-mcp.svg" alt="npm downloads">
+            <img src="https://img.shields.io/npm/v/todoist-mcp.svg" alt="npm version">
         </a>
     </div>
 </div>
