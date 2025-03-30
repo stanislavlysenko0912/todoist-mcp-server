@@ -1,7 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js'
 import { ToolHandlers } from '../utils/types.js'
 import z from 'zod'
-import { createApiHandler, createBatchApiHandler } from "../utils/handlers.js";
+import { createApiHandler, createBatchApiHandler, createSyncApiHandler } from "../utils/handlers.js";
 
 /// Common fields for create and update tasks
 const create_fields = {
@@ -285,7 +285,53 @@ export const TASKS_TOOLS: Tool[] = [
                 }
             }
         }
-    }
+    },
+    {
+        name: 'move_tasks',
+        description: 'Move task in Todoist',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of tasks to move",
+                    additionalDescription: "Set only one of: parent_id, section_id or project_id. To remove an item from a section, use only project_id with its current project value",
+                    required: ['id'],
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to move (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to move (if ID not provided)"
+                            },
+                            parent_id: {
+                                type: "string",
+                                description: "ID of the parent task to move the task to"
+                            },
+                            section_id: {
+                                type: "string",
+                                description: "ID of the section to move the task to"
+                            },
+                            project_id: {
+                                type: "string",
+                                description: "ID of the project to move the task to"
+                            },
+                        },
+                        anyOf: [
+                            {required: ["parent_id"]},
+                            {required: ["section_id"]},
+                            {required: ["project_id"]}
+                        ]
+                    }
+                }
+            }
+        }
+    },
 ];
 
 export const TASK_HANDLERS: ToolHandlers = {
@@ -423,5 +469,55 @@ export const TASK_HANDLERS: ToolHandlers = {
         findByName: (name, items) => items.find(item =>
             item.content && item.content.toLowerCase().includes(name.toLowerCase())
         )
+    }),
+
+    move_tasks: createSyncApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
+            parent_id: z.string().optional(),
+            section_id: z.string().optional(),
+            project_id: z.string().optional(),
+        },
+        commandType: 'item_move',
+        errorPrefix: 'Failed to move tasks',
+        idField: 'task_id',
+        nameField: 'task_name',
+        lookupPath: '/tasks',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        ),
+        buildCommandArgs: (item, itemId) => {
+            const args: {
+                id: string;
+                parent_id?: string;
+                section_id?: string;
+                project_id?: string;
+            } = {id: itemId};
+
+            // Only one destination option
+            if (item.parent_id) args.parent_id = item.parent_id;
+            else if (item.section_id) args.section_id = item.section_id;
+            else if (item.project_id) args.project_id = item.project_id;
+
+            return args;
+        },
+        validateItem: (item) => {
+            // Ensure exactly one destination is specified
+            const destinationCount = [
+                item.parent_id,
+                item.section_id,
+                item.project_id
+            ].filter(Boolean).length;
+
+            if (destinationCount !== 1) {
+                return {
+                    valid: false,
+                    error: 'Exactly one of parent_id, section_id, or project_id must be provided'
+                };
+            }
+
+            return {valid: true};
+        }
     })
 };
