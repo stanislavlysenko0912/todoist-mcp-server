@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { log, todoistApi } from "./helpers.js";
 import { ToolResult } from "./types.js";
+import { v4 as uuidv4 } from 'uuid';
 
 const createHandler = <TSchema extends z.ZodType<any>, TResult>(
     schema: TSchema,
@@ -141,7 +142,6 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
             items.some(item => item[options.nameField!] && !item[options.idField!]);
 
         if (needsNameLookup) {
-            // Определяем базовый путь для запроса всех элементов
             // Determine the base path for fetching all items
             // Example: /tasks from /tasks/{id}
             const lookupPath = options.basePath ||
@@ -264,6 +264,148 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
             },
             results
         };
+    };
+
+    return createHandler(batchSchema, handler, options.errorPrefix);
+}
+
+export function createSyncApiHandler<T extends z.ZodRawShape>(
+    options: {
+        itemSchema: T,
+        commandType: string,  // The sync command type (e.g., 'item_move')
+        errorPrefix: string,
+        idField: string,
+        nameField?: string,
+        lookupPath?: string,  // Configurable path for lookup
+        findByName?: (name: string, items: any[]) => any | undefined,
+        buildCommandArgs: (item: any, itemId: string) => Record<string, any>,
+        validateItem?: (item: any) => { valid: boolean, error?: string }  // Optional validation
+    }
+) {
+    const itemSchemaObj = z.object(options.itemSchema);
+    const batchSchema = z.object({
+        items: z.array(itemSchemaObj)
+    });
+
+    const handler = async (args: z.infer<typeof batchSchema>): Promise<any> => {
+        const {items} = args;
+
+        try {
+            // For name lookup if needed
+            let allItems: any[] = [];
+
+            const needsNameLookup = options.nameField &&
+                options.findByName &&
+                items.some(item => item[options.nameField!] && !item[options.idField]);
+
+            if (needsNameLookup) {
+                if (!options.lookupPath) {
+                    throw new Error(`${options.errorPrefix}: lookupPath must be specified for name-based lookup`);
+                }
+                // Generic lookup path for any resource type
+                allItems = await todoistApi.get(options.lookupPath, {});
+            }
+
+            // Build commands array for Sync API
+            const commands = [];
+            const failedItems = [];
+
+            for (const item of items) {
+                // Optional pre-validation
+                if (options.validateItem) {
+                    const validation = options.validateItem(item);
+                    if (!validation.valid) {
+                        failedItems.push({
+                            success: false,
+                            error: validation.error || "Validation failed",
+                            item
+                        });
+                        continue;
+                    }
+                }
+
+                let itemId = item[options.idField];
+
+                // Lookup by name if needed
+                if (!itemId && item[options.nameField!] && options.findByName) {
+                    const searchName = item[options.nameField!];
+                    const matchedItem = options.findByName(searchName, allItems);
+
+                    if (!matchedItem) {
+                        failedItems.push({
+                            success: false,
+                            error: `Item not found with name: ${searchName}`,
+                            item
+                        });
+                        continue;
+                    }
+
+                    itemId = matchedItem.id;
+                }
+
+                if (!itemId) {
+                    failedItems.push({
+                        success: false,
+                        error: `Either ${options.idField} or ${options.nameField} must be provided`,
+                        item
+                    });
+                    continue;
+                }
+
+                // Use the provided function to build command args
+                const commandArgs = options.buildCommandArgs(item, itemId);
+
+                commands.push({
+                    type: options.commandType,
+                    uuid: uuidv4(),
+                    args: commandArgs
+                });
+            }
+
+            // If all items failed validation, return early
+            if (failedItems.length === items.length) {
+                return {
+                    success: false,
+                    summary: {
+                        total: items.length,
+                        succeeded: 0,
+                        failed: items.length
+                    },
+                    results: failedItems
+                };
+            }
+
+            // Execute the sync command if any valid commands exist
+            let syncResult = null;
+            if (commands.length > 0) {
+                syncResult = await todoistApi.sync(commands);
+            }
+
+            // Combine successful and failed results
+            const successfulResults = commands.map((command, index) => ({
+                success: true,
+                id: command.args.id,
+                command
+            }));
+
+            const results = [...successfulResults, ...failedItems];
+
+            return {
+                success: failedItems.length === 0,
+                summary: {
+                    total: items.length,
+                    succeeded: items.length - failedItems.length,
+                    failed: failedItems.length
+                },
+                results,
+                sync_result: syncResult
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+            };
+        }
     };
 
     return createHandler(batchSchema, handler, options.errorPrefix);
