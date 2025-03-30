@@ -154,6 +154,7 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         path: '/comments',
         errorPrefix: 'Failed to get comments',
     }),
+
     create_comments: createBatchApiHandler({
         itemSchema: {
             task_id: z.string().optional(),
@@ -166,6 +167,7 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to create comments',
         mode: 'create',
     }),
+
     get_comments: createBatchApiHandler({
         itemSchema: {
             id: z.string(),
@@ -176,6 +178,7 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         mode: 'read',
         idField: 'id',
     }),
+
     update_comments: createBatchApiHandler({
         itemSchema: {
             id: z.string(),
@@ -187,6 +190,7 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'id',
     }),
+
     delete_comments: createBatchApiHandler({
         itemSchema: {
             id: z.string(),

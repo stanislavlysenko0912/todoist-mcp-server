@@ -221,6 +221,7 @@ export const LABEL_HANDLERS: ToolHandlers = {
         path: '/labels',
         errorPrefix: 'Failed to get labels',
     }),
+
     create_labels: createBatchApiHandler({
         itemSchema: {
             name: z.string(),
@@ -233,6 +234,7 @@ export const LABEL_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to create labels',
         mode: 'create',
     }),
+
     get_labels: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
@@ -248,6 +250,7 @@ export const LABEL_HANDLERS: ToolHandlers = {
             item => item.name.toLowerCase().includes(name.toLowerCase())
         ),
     }),
+
     update_labels: createBatchApiHandler({
         itemSchema: {
             id: z.string(),
@@ -262,6 +265,7 @@ export const LABEL_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'id',
     }),
+
     delete_labels: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
@@ -277,12 +281,14 @@ export const LABEL_HANDLERS: ToolHandlers = {
             item => item.name.toLowerCase().includes(name.toLowerCase())
         ),
     }),
+
     get_shared_labels: createApiHandler({
         schemaShape: {},
         method: 'GET',
         path: '/labels/shared',
         errorPrefix: 'Failed to get shared labels',
     }),
+
     rename_shared_labels: createBatchApiHandler({
         itemSchema: {
             name: z.string(),
@@ -293,6 +299,7 @@ export const LABEL_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to rename shared labels',
         mode: 'update',
     }),
+
     remove_shared_labels: createBatchApiHandler({
         itemSchema: {
             name: z.string(),

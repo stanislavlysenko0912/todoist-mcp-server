@@ -180,6 +180,7 @@ export const PROJECT_HANDLERS: ToolHandlers = {
         path: '/projects',
         errorPrefix: 'Failed to get projects',
     }),
+
     create_projects: createBatchApiHandler({
         itemSchema: {
             name: z.string(),
@@ -193,6 +194,7 @@ export const PROJECT_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to create projects',
         mode: 'create',
     }),
+
     get_projects: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
@@ -208,6 +210,7 @@ export const PROJECT_HANDLERS: ToolHandlers = {
             item => item.name.toLowerCase().includes(name.toLowerCase())
         ),
     }),
+
     update_projects: createBatchApiHandler({
         itemSchema: {
             id: z.string(),
@@ -222,6 +225,7 @@ export const PROJECT_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'id',
     }),
+
     delete_projects: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
@@ -237,6 +241,7 @@ export const PROJECT_HANDLERS: ToolHandlers = {
             item => item.name.toLowerCase().includes(name.toLowerCase())
         ),
     }),
+
     get_collaborators: createApiHandler({
         schemaShape: {
             id: z.string(),

@@ -155,6 +155,7 @@ export const SECTION_HANDLERS: ToolHandlers = {
         path: '/sections',
         errorPrefix: 'Failed to get sections',
     }),
+
     create_sections: createBatchApiHandler({
         itemSchema: {
             name: z.string(),
@@ -166,6 +167,7 @@ export const SECTION_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to create sections',
         mode: 'create',
     }),
+
     get_sections: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
@@ -181,6 +183,7 @@ export const SECTION_HANDLERS: ToolHandlers = {
             item => item.name.toLowerCase().includes(name.toLowerCase())
         ),
     }),
+
     update_sections: createBatchApiHandler({
         itemSchema: {
             id: z.string(),
@@ -193,6 +196,7 @@ export const SECTION_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'id',
     }),
+
     delete_sections: createBatchApiHandler({
         itemSchema: {
             id: z.string().optional(),
