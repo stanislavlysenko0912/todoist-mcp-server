@@ -10,4 +10,6 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", "dist/index.js"]
+ENV API_KEY=API_TOKEN_HERE
+
+ENTRYPOINT ["node", "dist/index.js"]
