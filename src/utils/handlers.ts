@@ -99,3 +99,172 @@ export function createApiHandler<T extends z.ZodRawShape, R = any>(
 
     return createHandler(schema, handler, options.errorPrefix);
 }
+
+export function createBatchApiHandler<T extends z.ZodRawShape>(
+    options: {
+        itemSchema: T,
+        method: HttpMethod,
+        errorPrefix: string,
+        mode?: 'read' | 'create' | 'update' | 'delete',
+        idField?: string,
+        nameField?: string,
+        findByName?: (name: string, items: any[]) => any | undefined
+    } & (
+        // Or we specify full path
+        {
+            path: string,
+            basePath?: never,
+            pathSuffix?: never
+        } |
+        // Or we specify base path and path suffix
+        {
+            path?: never,
+            basePath: string,
+            pathSuffix: string
+        }
+        )
+) {
+    const itemSchemaObj = z.object(options.itemSchema);
+    const batchSchema = z.object({
+        items: z.array(itemSchemaObj)
+    });
+
+    const handler = async (args: z.infer<typeof batchSchema>): Promise<any> => {
+        const {items} = args;
+
+        // For modes other than create, check if name lookup is needed
+        let allItems: any[] = [];
+
+        const needsNameLookup = options.mode !== 'create' &&
+            options.nameField &&
+            options.findByName &&
+            items.some(item => item[options.nameField!] && !item[options.idField!]);
+
+        if (needsNameLookup) {
+            // Определяем базовый путь для запроса всех элементов
+            // Determine the base path for fetching all items
+            // Example: /tasks from /tasks/{id}
+            const lookupPath = options.basePath ||
+                (options.path ? options.path.split('/{')[0] : '');
+            allItems = await todoistApi.get(lookupPath, {});
+        }
+
+        const results = await Promise.all(items.map(async (item) => {
+            try {
+                let finalPath = '';
+                let apiParams = {...item};
+
+                // For modes where need id
+                if (options.mode !== 'create' && options.idField) {
+                    let itemId = item[options.idField];
+                    let matchedName = null;
+                    let matchedContent = null;
+
+                    // If no ID but name is provided, search by name
+                    if (!itemId && item[options.nameField!] && options.findByName) {
+                        const searchName = item[options.nameField!];
+                        const matchedItem = options.findByName(searchName, allItems);
+
+                        if (!matchedItem) {
+                            return {
+                                success: false,
+                                error: `Item not found with name: ${ searchName }`,
+                                item
+                            };
+                        }
+
+                        itemId = matchedItem.id;
+                        matchedName = searchName;
+                        matchedContent = matchedItem.content;
+                    }
+
+                    if (!itemId) {
+                        return {
+                            success: false,
+                            error: `Either ${ options.idField } or ${ options.nameField } must be provided`,
+                            item
+                        };
+                    }
+
+                    if (options.basePath && options.pathSuffix) {
+                        finalPath = `${ options.basePath }${ options.pathSuffix.replace('{id}', itemId) }`;
+                    } else if (options.path) {
+                        finalPath = options.path.replace('{id}', itemId);
+                    }
+
+                    delete apiParams[options.idField];
+                    if (options.nameField) {
+                        delete apiParams[options.nameField];
+                    }
+
+                    let result;
+                    switch (options.method) {
+                        case 'GET':
+                            result = await todoistApi.get(finalPath, apiParams);
+                            break;
+                        case 'POST':
+                            result = await todoistApi.post(finalPath, apiParams);
+                            break;
+                        case 'DELETE':
+                            result = await todoistApi.delete(finalPath);
+                            break;
+                    }
+
+                    const response: any = {
+                        success: true,
+                        id: itemId,
+                        result
+                    };
+
+                    if (matchedName) {
+                        response.found_by_name = matchedName;
+                        response.matched_content = matchedContent;
+                    }
+
+                    return response;
+                }
+                // Create mode
+                else {
+                    finalPath = options.path || options.basePath || '';
+
+                    let result;
+                    switch (options.method) {
+                        case 'GET':
+                            result = await todoistApi.get(finalPath, apiParams);
+                            break;
+                        case 'POST':
+                            result = await todoistApi.post(finalPath, apiParams);
+                            break;
+                        case 'DELETE':
+                            result = await todoistApi.delete(finalPath);
+                            break;
+                    }
+
+                    return {
+                        success: true,
+                        created_item: result
+                    };
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : String(error),
+                    item
+                };
+            }
+        }));
+
+        const successCount = results.filter(r => r.success).length;
+        return {
+            success: successCount === items.length,
+            summary: {
+                total: items.length,
+                succeeded: successCount,
+                failed: items.length - successCount
+            },
+            results
+        };
+    };
+
+    return createHandler(batchSchema, handler, options.errorPrefix);
+}
