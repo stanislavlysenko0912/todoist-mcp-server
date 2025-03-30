@@ -161,33 +161,53 @@ export const LABELS_TOOLS: Tool[] = [
         }
     },
     {
-        name: 'rename_shared_label',
-        description: 'Rename a shared label in Todoist',
+        name: 'rename_shared_labels',
+        description: 'Rename a shared labels in Todoist',
         inputSchema: {
             type: "object",
-            required: ["name", "new_name"],
+            required: ["items"],
             properties: {
-                name: {
-                    type: "string",
-                    description: 'The name of the existing label to rename'
-                },
-                new_name: {
-                    type: "string",
-                    description: 'The new name for the label'
+                items: {
+                    type: "array",
+                    description: "Array of shared labels objects to rename",
+                    items: {
+                        type: "object",
+                        required: ["name", "new_name"],
+                        properties: {
+                            name: {
+                                type: "string",
+                                description: 'The name of the existing label to rename'
+                            },
+                            new_name: {
+                                type: "string",
+                                description: 'The new name for the label'
+                            }
+                        }
+                    }
                 }
             }
         }
     },
     {
-        name: 'remove_shared_label',
-        description: 'Remove a shared label in Todoist',
+        name: 'remove_shared_labels',
+        description: 'Remove a shared labels in Todoist',
         inputSchema: {
             type: "object",
-            required: ["name"],
+            required: ["items"],
             properties: {
-                name: {
-                    type: "string",
-                    description: 'The name of the label to remove'
+                items: {
+                    type: "array",
+                    description: "Array of labels objects to remove",
+                    items: {
+                        type: "object",
+                        required: ["name"],
+                        properties: {
+                            name: {
+                                type: "string",
+                                description: 'The name of the label to remove'
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -263,21 +283,23 @@ export const LABEL_HANDLERS: ToolHandlers = {
         path: '/labels/shared',
         errorPrefix: 'Failed to get shared labels',
     }),
-    rename_shared_label: createApiHandler({
-        schemaShape: {
+    rename_shared_labels: createBatchApiHandler({
+        itemSchema: {
             name: z.string(),
             new_name: z.string(),
         },
         method: 'POST',
         path: '/labels/shared/rename',
-        errorPrefix: 'Failed to rename shared label',
+        errorPrefix: 'Failed to rename shared labels',
+        mode: 'update',
     }),
-    remove_shared_label: createApiHandler({
-        schemaShape: {
+    remove_shared_labels: createBatchApiHandler({
+        itemSchema: {
             name: z.string(),
         },
         method: 'POST',
         path: '/labels/shared/remove',
-        errorPrefix: 'Failed to remove shared label',
+        errorPrefix: 'Failed to remove shared labels',
+        mode: 'delete',
     }),
 }
