@@ -1,7 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js'
 import { ToolHandlers } from '../utils/types.js'
 import z from 'zod'
-import { createApiHandler, createBatchApiHandler } from "../utils/handlers.js";
+import { createApiHandler, createBatchApiHandler, createSyncApiHandler } from "../utils/handlers.js";
 
 export const PROJECT_TOOLS: Tool[] = [
     {
@@ -170,6 +170,42 @@ export const PROJECT_TOOLS: Tool[] = [
                 }
             }
         }
+    },
+    {
+        name: 'move_projects',
+        description: 'Move a projects to a different parent in Todoist',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of projects to move",
+                    items: {
+                        type: "object",
+                        properties: {
+                            id: {
+                                type: "string",
+                                description: 'ID of the project to move (preferred over name)'
+                            },
+                            name: {
+                                type: "string",
+                                description: 'Name of the project to move'
+                            },
+                            parent_id: {
+                                type: "string",
+                                description: 'ID of the parent project to move this project under. Use null to move to root level.'
+                            }
+                        },
+                        required: ["parent_id"],
+                        anyOf: [
+                            {required: ["id"]},
+                            {required: ["name"]}
+                        ]
+                    }
+                }
+            }
+        }
     }
 ]
 
@@ -250,4 +286,26 @@ export const PROJECT_HANDLERS: ToolHandlers = {
         path: '/projects/{id}/collaborators',
         errorPrefix: 'Failed to get collaborators',
     }),
+
+    move_projects: createSyncApiHandler({
+        itemSchema: {
+            id: z.string().optional(),
+            name: z.string().optional(),
+            parent_id: z.string().nullable(),
+        },
+        commandType: 'project_move',
+        errorPrefix: 'Failed to move projects',
+        idField: 'id',
+        nameField: 'name',
+        lookupPath: '/projects',
+        findByName: (name, items) => items.find(
+            item => item.name.toLowerCase().includes(name.toLowerCase())
+        ),
+        buildCommandArgs: (item, itemId) => {
+            return {
+                id: itemId,
+                parent_id: item.parent_id
+            };
+        }
+    })
 }
