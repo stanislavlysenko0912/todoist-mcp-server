@@ -152,7 +152,7 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
         const results = await Promise.all(items.map(async (item) => {
             try {
                 let finalPath = '';
-                let apiParams = {...item};
+                const apiParams = {...item};
 
                 // For modes where need id
                 if (options.mode !== 'create' && options.idField) {
@@ -382,7 +382,7 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(
             }
 
             // Combine successful and failed results
-            const successfulResults = commands.map((command, index) => ({
+            const successfulResults = commands.map((command) => ({
                 success: true,
                 id: command.args.id,
                 command
