@@ -13,8 +13,10 @@
 
 ## Features
 
-* **Complete Todoist API Integration**: Access to the full Todoist REST API v2 through natural language
-* **Tasks Management**: Create, update, close, reopen, and delete tasks using conversational language
+* **Complete Todoist API Integration**: Access to the full Todoist REST API v2, and support for the Todoist Sync API through natural language
+* **Batch Processing**: Client can process multiple tasks in a single request
+* **Search by name**: AI can search for tasks, projects, and labels by name instead of ID
+* **Tasks Management**: Create, update, close, reopen, move, and delete tasks using conversational language
 * **Project Management**: Create and manage projects and sections
 * **Comments Support**: Add and manage comments on tasks and projects
 * **Label Management**: Create and manage personal and shared labels
@@ -53,54 +55,50 @@ Add to your `claude_desktop_config.json`:
 ## Available Tools
 
 ### Tasks
-
-- `get_tasks`: Retrieve tasks with optional filtering
-- `create_task`: Create a new task with various attributes
-- `get_task`: Get a specific task by ID
-- `update_task`: Update an existing task
-- `close_task`: Mark a task as complete
-- `reopen_task`: Reopen a completed task
-- `delete_task`: Delete a task
+- `get_tasks_list`: Get tasks with optional filtering by project, section, label, etc.
+- `create_tasks`: Create new tasks with various attributes
+- `get_tasks`: Get specific tasks by ID or name
+- `update_tasks`: Update existing tasks
+- `close_tasks`: Mark tasks as complete
+- `reopen_tasks`: Reopen completed tasks
+- `delete_tasks`: Delete tasks
+- `move_tasks`: Move tasks to a different project or section
 
 ### Projects
-
-- `get_projects`: Get all projects
-- `create_project`: Create a new project
-- `get_project`: Get a specific project by ID
-- `update_project`: Update an existing project
-- `delete_project`: Delete a project
+- `get_projects_list`: Get all projects
+- `create_projects`: Create new projects
+- `get_projects`: Get specific projects by ID or name
+- `update_projects`: Update existing projects
+- `delete_projects`: Delete projects
 - `get_collaborators`: Get all collaborators for a project
+- `move_projects`: Move projects to a different location or subproject
 
 ### Sections
-
-- `get_sections`: Get all sections or filter by project
-- `create_section`: Create a new section
-- `get_section`: Get a specific section by ID
-- `update_section`: Update a section
-- `delete_section`: Delete a section
+- `get_sections_list`: Get all sections or filter by project
+- `create_sections`: Create new sections
+- `get_sections`: Get specific sections by ID or name
+- `update_sections`: Update sections
+- `delete_sections`: Delete sections
 
 ### Comments
-
-- `get_comments`: Get comments for a project or task
-- `create_comment`: Create a new comment
-- `get_comment`: Get a specific comment by ID
-- `update_comment`: Update a comment
-- `delete_comment`: Delete a comment
+- `get_comments_list`: Get comments for a project or task
+- `create_comments`: Create new comments
+- `get_comments`: Get specific comments by ID
+- `update_comments`: Update comments
+- `delete_comments`: Delete comments
 
 ### Labels
-
-- `get_labels`: Get all personal labels
-- `create_label`: Create a new personal label
-- `get_label`: Get a personal label by ID
-- `update_label`: Update a personal label
-- `delete_label`: Delete a personal label
+- `get_labels_list`: Get all personal labels
+- `create_labels`: Create new personal labels
+- `get_labels`: Get personal labels by ID or name
+- `update_labels`: Update personal labels
+- `delete_labels`: Delete personal labels
 - `get_shared_labels`: Get all shared labels
-- `rename_shared_label`: Rename a shared label
-- `remove_shared_label`: Remove a shared label
+- `rename_shared_labels`: Rename shared labels
+- `remove_shared_labels`: Remove shared labels
 
-### Utilities
-
-- `utils_get_colors`: Get available colors for projects, labels, and filters
+### Utils
+- `utils_get_colors`: Get available colors for projects, labels, filters
 
 ## Example Usage
 

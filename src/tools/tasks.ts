@@ -1,7 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js'
 import { ToolHandlers } from '../utils/types.js'
 import z from 'zod'
-import { createApiHandler } from "../utils/handlers.js";
+import { createApiHandler, createBatchApiHandler, createSyncApiHandler } from "../utils/handlers.js";
 
 /// Common fields for create and update tasks
 const create_fields = {
@@ -59,8 +59,8 @@ const create_fields = {
 
 export const TASKS_TOOLS: Tool[] = [
     {
-        name: 'get_tasks',
-        description: 'Get tasks from Todoist',
+        name: 'get_tasks_list',
+        description: 'Get tasks list from Todoist',
         inputSchema: {
             type: "object",
             required: [],
@@ -94,107 +94,248 @@ export const TASKS_TOOLS: Tool[] = [
         }
     },
     {
-        name: 'create_task',
-        description: 'Create a new task in Todoist',
+        name: 'create_tasks',
+        description: 'Create tasks in Todoist',
         inputSchema: {
             type: "object",
-            required: ["content"],
+            required: ["items"],
             properties: {
-                ...create_fields,
-                project_id: {
-                    type: "string",
-                    description: 'Task project ID. If not set, task is put to user\'s Inbox'
-                },
-                section_id: {
-                    type: "string",
-                    description: 'ID of section to put task into'
-                },
-                parent_id: {
-                    type: "string",
-                    description: 'Parent task ID'
-                },
-                order: {
-                    type: "integer",
-                    description: 'Non-zero integer value used by clients to sort tasks under the same parent'
-                },
-            }
-        }
-    },
-    {
-        name: 'get_task',
-        description: 'Get a task from Todoist by ID',
-        inputSchema: {
-            type: "object",
-            required: ["id"],
-            properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the task to retrieve'
+                items: {
+                    type: "array",
+                    description: "Array of tasks to create",
+                    items: {
+                        type: "object",
+                        required: ["content"],
+                        properties: {
+                            ...create_fields,
+                            project_id: {
+                                type: "string",
+                                description: 'Task project ID. If not set, task is put to user\'s Inbox'
+                            },
+                            section_id: {
+                                type: "string",
+                                description: 'ID of section to put task into'
+                            },
+                            parent_id: {
+                                type: "string",
+                                description: 'Parent task ID'
+                            },
+                            order: {
+                                type: "integer",
+                                description: 'Non-zero integer value used by clients to sort tasks under the same parent'
+                            }
+                        }
+                    }
                 }
             }
         }
     },
     {
-        name: 'update_task',
-        description: 'Update a task in Todoist',
+        name: 'get_tasks',
+        description: 'Get a tasks from Todoist by ID or name',
         inputSchema: {
             type: "object",
-            required: ["id"],
+            required: ["items"],
             properties: {
-                ...create_fields,
-                id: {
-                    type: "string",
-                    description: 'ID of the task to update'
-                },
-            }
-        }
-    },
-    {
-        name: 'close_task',
-        description: 'Close a task in Todoist',
-        inputSchema: {
-            type: "object",
-            required: ["id"],
-            properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the task to close'
+                items: {
+                    type: "array",
+                    description: "Array of task identifiers to retrieve",
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to retrieve (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to retrieve (if ID not provided)"
+                            }
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["task_name"]}
+                        ]
+                    }
                 }
             }
         }
     },
     {
-        name: 'reopen_task',
-        description: 'Reopen a task in Todoist',
+        name: 'update_tasks',
+        description: 'Update tasks in Todoist',
         inputSchema: {
             type: "object",
-            required: ["id"],
+            required: ["items"],
             properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the task to reopen'
+                items: {
+                    type: "array",
+                    description: "Array of tasks to update",
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to update (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to update (if ID not provided)"
+                            },
+                            ...create_fields
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["task_name"]}
+                        ]
+                    }
                 }
             }
         }
     },
     {
-        name: 'delete_task',
-        description: 'Delete a task in Todoist, be careful, this action is irreversible',
+        name: 'close_tasks',
+        description: 'Close tasks in Todoist',
         inputSchema: {
             type: "object",
-            required: ["id"],
+            required: ["items"],
             properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the task to delete'
+                items: {
+                    type: "array",
+                    description: "Array of tasks to close",
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to close (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to close (if ID not provided)"
+                            }
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["task_name"]}
+                        ]
+                    }
                 }
             }
         }
-    }
-]
+    },
+    {
+        name: 'reopen_tasks',
+        description: 'Reopen tasks in Todoist',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of tasks to reopen",
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to reopen (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to reopen (if ID not provided)"
+                            }
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["task_name"]}
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: 'delete_tasks',
+        description: 'Delete tasks in Todoist, be careful, this action is irreversible',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of tasks to delete",
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to delete (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to delete (if ID not provided)"
+                            }
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["task_name"]}
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: 'move_tasks',
+        description: 'Move task in Todoist',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of tasks to move",
+                    additionalDescription: "Set only one of: parent_id, section_id or project_id. To remove an item from a section, use only project_id with its current project value",
+                    required: ['id'],
+                    items: {
+                        type: "object",
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: "ID of the task to move (preferred)"
+                            },
+                            task_name: {
+                                type: "string",
+                                description: "Name of the task to move (if ID not provided)"
+                            },
+                            parent_id: {
+                                type: "string",
+                                description: "ID of the parent task to move the task to"
+                            },
+                            section_id: {
+                                type: "string",
+                                description: "ID of the section to move the task to"
+                            },
+                            project_id: {
+                                type: "string",
+                                description: "ID of the project to move the task to"
+                            },
+                        },
+                        anyOf: [
+                            {required: ["parent_id"]},
+                            {required: ["section_id"]},
+                            {required: ["project_id"]}
+                        ]
+                    }
+                }
+            }
+        }
+    },
+];
 
 export const TASK_HANDLERS: ToolHandlers = {
-    get_tasks: createApiHandler({
+    get_tasks_list: createApiHandler({
         schemaShape: {
             project_id: z.string().optional(),
             section_id: z.string().optional(),
@@ -208,14 +349,13 @@ export const TASK_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to get tasks',
         processResult: (results, args) => {
             let filteredTasks = results;
-
             filteredTasks = filteredTasks.slice(0, args.limit || 50);
-
             return filteredTasks;
         }
     }),
-    create_task: createApiHandler({
-        schemaShape: {
+
+    create_tasks: createBatchApiHandler({
+        itemSchema: {
             content: z.string(),
             description: z.string().optional(),
             project_id: z.string().optional(),
@@ -234,19 +374,30 @@ export const TASK_HANDLERS: ToolHandlers = {
         },
         method: 'POST',
         path: '/tasks',
-        errorPrefix: 'Failed to create task',
+        errorPrefix: 'Failed to create tasks',
+        mode: 'create'
     }),
-    get_task: createApiHandler({
-        schemaShape: {
-            id: z.string(),
+
+    get_tasks: createBatchApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
         },
         method: 'GET',
         path: '/tasks/{id}',
         errorPrefix: 'Failed to get task',
+        mode: 'read',
+        idField: 'task_id',
+        nameField: 'task_name',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        )
     }),
-    update_task: createApiHandler({
-        schemaShape: {
-            id: z.string(),
+
+    update_tasks: createBatchApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
             content: z.string().optional(),
             description: z.string().optional(),
             labels: z.array(z.string()).optional(),
@@ -261,30 +412,112 @@ export const TASK_HANDLERS: ToolHandlers = {
         },
         method: 'POST',
         path: '/tasks/{id}',
-        errorPrefix: 'Failed to update task',
+        errorPrefix: 'Failed to update tasks',
+        mode: 'update',
+        idField: 'task_id',
+        nameField: 'task_name',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        )
     }),
-    close_task: createApiHandler({
-        schemaShape: {
-            id: z.string(),
+
+    close_tasks: createBatchApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
         },
         method: 'POST',
-        path: '/tasks/{id}/close',
-        errorPrefix: 'Failed to close task',
+        basePath: '/tasks',
+        pathSuffix: '/{id}/close',
+        errorPrefix: 'Failed to close tasks',
+        mode: 'update',
+        idField: 'task_id',
+        nameField: 'task_name',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        )
     }),
-    reopen_task: createApiHandler({
-        schemaShape: {
-            id: z.string(),
+
+    reopen_tasks: createBatchApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
         },
         method: 'POST',
-        path: '/tasks/{id}/reopen',
-        errorPrefix: 'Failed to reopen task',
+        basePath: '/tasks',
+        pathSuffix: '/{id}/reopen',
+        errorPrefix: 'Failed to reopen tasks',
+        mode: 'update',
+        idField: 'task_id',
+        nameField: 'task_name',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        )
     }),
-    delete_task: createApiHandler({
-        schemaShape: {
-            id: z.string(),
+
+    delete_tasks: createBatchApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
         },
         method: 'DELETE',
         path: '/tasks/{id}',
-        errorPrefix: 'Failed to delete task',
+        errorPrefix: 'Failed to delete tasks',
+        mode: 'delete',
+        idField: 'task_id',
+        nameField: 'task_name',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        )
     }),
-}
+
+    move_tasks: createSyncApiHandler({
+        itemSchema: {
+            task_id: z.string().optional(),
+            task_name: z.string().optional(),
+            parent_id: z.string().optional(),
+            section_id: z.string().optional(),
+            project_id: z.string().optional(),
+        },
+        commandType: 'item_move',
+        errorPrefix: 'Failed to move tasks',
+        idField: 'task_id',
+        nameField: 'task_name',
+        lookupPath: '/tasks',
+        findByName: (name, items) => items.find(item =>
+            item.content && item.content.toLowerCase().includes(name.toLowerCase())
+        ),
+        buildCommandArgs: (item, itemId) => {
+            const args: {
+                id: string;
+                parent_id?: string;
+                section_id?: string;
+                project_id?: string;
+            } = {id: itemId};
+
+            // Only one destination option
+            if (item.parent_id) args.parent_id = item.parent_id;
+            else if (item.section_id) args.section_id = item.section_id;
+            else if (item.project_id) args.project_id = item.project_id;
+
+            return args;
+        },
+        validateItem: (item) => {
+            // Ensure exactly one destination is specified
+            const destinationCount = [
+                item.parent_id,
+                item.section_id,
+                item.project_id
+            ].filter(Boolean).length;
+
+            if (destinationCount !== 1) {
+                return {
+                    valid: false,
+                    error: 'Exactly one of parent_id, section_id, or project_id must be provided'
+                };
+            }
+
+            return {valid: true};
+        }
+    })
+};

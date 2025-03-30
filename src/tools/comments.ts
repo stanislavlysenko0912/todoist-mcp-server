@@ -1,12 +1,12 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js'
 import { ToolHandlers } from '../utils/types.js'
 import z from 'zod'
-import { createApiHandler } from "../utils/handlers.js";
+import { createApiHandler, createBatchApiHandler } from "../utils/handlers.js";
 
 export const COMMENTS_TOOLS: Tool[] = [
     {
-        name: 'get_comments',
-        description: 'Get all comments from Todoist, must be provided or `project_id` or `task_id`',
+        name: 'get_comments_list',
+        description: 'Get all comments from Todoist',
         inputSchema: {
             type: "object",
             required: [],
@@ -19,77 +19,125 @@ export const COMMENTS_TOOLS: Tool[] = [
                     type: "string",
                     description: 'ID of the task used to filter comments'
                 }
-            }
+            },
+            anyOf: [
+                {required: ["project_id"]},
+                {required: ["task_id"]}
+            ]
         }
     },
     {
-        name: 'create_comment',
-        description: 'Create a new comment in Todoist, must be provided or `project_id` or `task_id`',
+        name: 'create_comments',
+        description: 'Create new comments in Todoist',
         inputSchema: {
             type: "object",
-            required: ["content"],
+            required: ["items"],
             properties: {
-                task_id: {
-                    type: "string",
-                    description: 'Comment\'s task ID (for task comments)'
-                },
-                project_id: {
-                    type: "string",
-                    description: 'Comment\'s project ID (for project comments)'
-                },
-                content: {
-                    type: "string",
-                    description: 'Comment markdown-formatted text and hyperlinks'
-                },
-                // attachment: {
-                //     type: "object",
-                //     description: 'Object for attachment object'
-                // }
-            }
-        }
-    },
-    {
-        name: 'get_comment',
-        description: 'Get a comment from Todoist by ID',
-        inputSchema: {
-            type: "object",
-            required: ["id"],
-            properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the comment to retrieve'
+                items: {
+                    type: "array",
+                    description: "Array of comment objects to create",
+                    items: {
+                        type: "object",
+                        required: ["content"],
+                        properties: {
+                            task_id: {
+                                type: "string",
+                                description: 'Comment\'s task ID (for task comments)'
+                            },
+                            project_id: {
+                                type: "string",
+                                description: 'Comment\'s project ID (for project comments)'
+                            },
+                            content: {
+                                type: "string",
+                                description: 'Comment markdown-formatted text and hyperlinks'
+                            }
+                            // attachment: {
+                            //     type: "object",
+                            //     description: 'Object for attachment object'
+                            // }
+                        },
+                        anyOf: [
+                            {required: ["task_id"]},
+                            {required: ["project_id"]}
+                        ]
+                    }
                 }
             }
         }
     },
     {
-        name: 'update_comment',
-        description: 'Update a comment in Todoist',
+        name: 'get_comments',
+        description: 'Get comments from Todoist by ID',
         inputSchema: {
             type: "object",
-            required: ["id", "content"],
+            required: ["items"],
             properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the comment to update'
-                },
-                content: {
-                    type: "string",
-                    description: 'New content, markdown-formatted text and hyperlinks'
+                items: {
+                    type: "array",
+                    description: "Array of comment identifiers to retrieve",
+                    items: {
+                        type: "object",
+                        required: ["id"],
+                        properties: {
+                            id: {
+                                type: "string",
+                                description: 'ID of the comment to retrieve'
+                            }
+                        }
+                    }
                 }
             }
         }
     },
     {
-        name: 'delete_comment',
-        description: 'Delete a comment in Todoist',
+        name: 'update_comments',
+        description: 'Update comments in Todoist',
         inputSchema: {
             type: "object",
-            required: ["id"],
+            required: ["items"],
             properties: {
-                id: {
-                    type: "string",
-                    description: 'ID of the comment to delete'
+                items: {
+                    type: "array",
+                    description: "Array of comment objects to update",
+                    items: {
+                        type: "object",
+                        required: ["id", "content"],
+                        properties: {
+                            id: {
+                                type: "string",
+                                description: 'ID of the comment to update'
+                            },
+                            content: {
+                                type: "string",
+                                description: 'New content, markdown-formatted text and hyperlinks'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        name: 'delete_comments',
+        description: 'Delete comments in Todoist',
+        inputSchema: {
+            type: "object",
+            required: ["items"],
+            properties: {
+                items: {
+                    type: "array",
+                    description: "Array of comments to delete",
+                    items: {
+                        type: "object",
+                        required: ["id"],
+                        properties: {
+                            id: {
+                                type: "string",
+                                description: 'ID of the comment to delete'
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -97,7 +145,7 @@ export const COMMENTS_TOOLS: Tool[] = [
 ]
 
 export const COMMENT_HANDLERS: ToolHandlers = {
-    get_comments: createApiHandler({
+    get_comments_list: createApiHandler({
         schemaShape: {
             project_id: z.string().optional(),
             task_id: z.string().optional(),
@@ -106,8 +154,9 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         path: '/comments',
         errorPrefix: 'Failed to get comments',
     }),
-    create_comment: createApiHandler({
-        schemaShape: {
+
+    create_comments: createBatchApiHandler({
+        itemSchema: {
             task_id: z.string().optional(),
             project_id: z.string().optional(),
             content: z.string(),
@@ -115,31 +164,41 @@ export const COMMENT_HANDLERS: ToolHandlers = {
         },
         method: 'POST',
         path: '/comments',
-        errorPrefix: 'Failed to create comment',
+        errorPrefix: 'Failed to create comments',
+        mode: 'create',
     }),
-    get_comment: createApiHandler({
-        schemaShape: {
+
+    get_comments: createBatchApiHandler({
+        itemSchema: {
             id: z.string(),
         },
         method: 'GET',
         path: '/comments/{id}',
-        errorPrefix: 'Failed to get comment',
+        errorPrefix: 'Failed to get comments',
+        mode: 'read',
+        idField: 'id',
     }),
-    update_comment: createApiHandler({
-        schemaShape: {
+
+    update_comments: createBatchApiHandler({
+        itemSchema: {
             id: z.string(),
             content: z.string(),
         },
         method: 'POST',
         path: '/comments/{id}',
-        errorPrefix: 'Failed to update comment',
+        errorPrefix: 'Failed to update comments',
+        mode: 'update',
+        idField: 'id',
     }),
-    delete_comment: createApiHandler({
-        schemaShape: {
+
+    delete_comments: createBatchApiHandler({
+        itemSchema: {
             id: z.string(),
         },
         method: 'DELETE',
         path: '/comments/{id}',
-        errorPrefix: 'Failed to delete comment',
+        idField: 'id',
+        errorPrefix: 'Failed to delete comments',
+        mode: 'delete',
     }),
 }
