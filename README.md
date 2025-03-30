@@ -13,10 +13,10 @@
 
 ## Features
 
-* **Complete Todoist API Integration**: Access to the full Todoist REST API v2 through natural language
+* **Complete Todoist API Integration**: Access to the full Todoist REST API v2, and support for the Todoist Sync API through natural language
 * **Batch Processing**: Client can process multiple tasks in a single request
 * **Search by name**: AI can search for tasks, projects, and labels by name instead of ID
-* **Tasks Management**: Create, update, close, reopen, and delete tasks using conversational language
+* **Tasks Management**: Create, update, close, reopen, move, and delete tasks using conversational language
 * **Project Management**: Create and manage projects and sections
 * **Comments Support**: Add and manage comments on tasks and projects
 * **Label Management**: Create and manage personal and shared labels
@@ -62,6 +62,7 @@ Add to your `claude_desktop_config.json`:
 - `close_tasks`: Mark tasks as complete
 - `reopen_tasks`: Reopen completed tasks
 - `delete_tasks`: Delete tasks
+- `move_tasks`: Move tasks to a different project or section
 
 ### Projects
 - `get_projects_list`: Get all projects
@@ -70,6 +71,7 @@ Add to your `claude_desktop_config.json`:
 - `update_projects`: Update existing projects
 - `delete_projects`: Delete projects
 - `get_collaborators`: Get all collaborators for a project
+- `move_projects`: Move projects to a different location or subproject
 
 ### Sections
 - `get_sections_list`: Get all sections or filter by project
