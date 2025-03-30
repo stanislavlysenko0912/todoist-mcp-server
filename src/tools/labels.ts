@@ -63,7 +63,7 @@ export const LABELS_TOOLS: Tool[] = [
                         properties: {
                             id: {
                                 type: "string",
-                                description: 'ID of the label to retrieve'
+                                description: 'ID of the label to retrieve (preferred over name)'
                             },
                             name: {
                                 type: "string",
