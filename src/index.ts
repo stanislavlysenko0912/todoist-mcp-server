@@ -2,21 +2,31 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import {
+    CallToolRequestSchema,
+    GetPromptRequestSchema,
+    ListPromptsRequestSchema,
+    ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+import { ALL_PROMPT_HANDLERS, ALL_PROMPTS } from './prompts.js';
+import { ALL_HANDLERS, ALL_TOOLS } from './tools.js';
 import { config, log } from './utils/helpers.js';
 import { version } from './utils/version.js';
-import { ALL_HANDLERS, ALL_TOOLS } from './tools.js';
 
 const server = new Server(
     {
         name: 'todoist-mcp',
         version,
     },
-    { capabilities: { tools: {} } }
+    { capabilities: { tools: {}, prompts: {} } }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return { tools: ALL_TOOLS };
+});
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    return { prompts: ALL_PROMPTS };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async request => {
@@ -45,6 +55,20 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             isError: true,
         };
     }
+});
+
+server.setRequestHandler(GetPromptRequestSchema, async request => {
+    const promptName = request.params.name;
+
+    log('Prompt call: ', promptName);
+
+    const handler = ALL_PROMPT_HANDLERS[promptName];
+
+    if (!handler) {
+        throw new Error(`Unknown prompt: ${promptName}`);
+    }
+
+    return await handler(request);
 });
 
 export async function main() {
