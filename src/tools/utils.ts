@@ -1,15 +1,15 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js'
-import { ToolHandlers, ToolResult } from '../utils/types.js'
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ToolHandlers, ToolResult } from '../utils/types.js';
 
 export const UTILS_TOOLS: Tool[] = [
     {
         name: 'utils_get_colors',
         description: 'Get available colors for projects, labels, filters in Todoist',
         inputSchema: {
-            type: "object"
-        }
-    }
-]
+            type: 'object',
+        },
+    },
+];
 
 export const UTILS_HANDLERS: ToolHandlers = {
     utils_get_colors: async (): Promise<ToolResult> => {
@@ -27,10 +27,12 @@ export const UTILS_HANDLERS: ToolHandlers = {
         ];
 
         return {
-            content: [{
-                type: 'text',
-                text: `${colors.map(color => `ID: ${color.id}, ${color.name}, (${color.hex})`).join('. ')}`
-            }]
-        }
-    }
-}
+            content: [
+                {
+                    type: 'text',
+                    text: `${colors.map(color => `ID: ${color.id}, ${color.name}, (${color.hex})`).join('. ')}`,
+                },
+            ],
+        };
+    },
+};

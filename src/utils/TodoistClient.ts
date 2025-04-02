@@ -15,9 +15,9 @@ export class TodoistClient {
 
     private getHeaders(includeContentType = false): HeadersInit {
         const headers: HeadersInit = {
-            'Authorization': `Bearer ${ this.apiToken }`,
-            'Accept': 'application/json',
-            'X-Request-Id': uuidv4()
+            Authorization: `Bearer ${this.apiToken}`,
+            Accept: 'application/json',
+            'X-Request-Id': uuidv4(),
         };
 
         if (includeContentType) {
@@ -30,7 +30,7 @@ export class TodoistClient {
     private async handleResponse(response: Response) {
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Todoist API error (${ response.status }): ${ errorText }`);
+            throw new Error(`Todoist API error (${response.status}): ${errorText}`);
         }
 
         // For 204 No Content responses
@@ -48,7 +48,7 @@ export class TodoistClient {
      * @returns API response data
      */
     async get(endpoint: string, params: Record<string, string> = {}): Promise<any> {
-        let url = `${ API_BASE_URL }${ endpoint }`;
+        let url = `${API_BASE_URL}${endpoint}`;
 
         const queryParams = new URLSearchParams();
         for (const [key, value] of Object.entries(params)) {
@@ -59,14 +59,14 @@ export class TodoistClient {
 
         const queryString = queryParams.toString();
         if (queryString) {
-            url += `?${ queryString }`;
+            url += `?${queryString}`;
         }
 
-        log(`Making GET request to: ${ url }`);
+        log(`Making GET request to: ${url}`);
 
         const response = await fetch(url, {
             method: 'GET',
-            headers: this.getHeaders()
+            headers: this.getHeaders(),
         });
 
         return this.handleResponse(response);
@@ -79,14 +79,14 @@ export class TodoistClient {
      * @returns API response data
      */
     async post(endpoint: string, data: Record<string, any> = {}): Promise<any> {
-        const url = `${ API_BASE_URL }${ endpoint }`;
+        const url = `${API_BASE_URL}${endpoint}`;
 
-        log(`Making POST request to: ${ url } with data:`, JSON.stringify(data, null, 2));
+        log(`Making POST request to: ${url} with data:`, JSON.stringify(data, null, 2));
 
         const response = await fetch(url, {
             method: 'POST',
             headers: this.getHeaders(true),
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
         });
 
         return this.handleResponse(response);
@@ -98,13 +98,13 @@ export class TodoistClient {
      * @returns API response data
      */
     async delete(endpoint: string): Promise<any> {
-        const url = `${ API_BASE_URL }${ endpoint }`;
+        const url = `${API_BASE_URL}${endpoint}`;
 
-        log(`Making DELETE request to: ${ url }`);
+        log(`Making DELETE request to: ${url}`);
 
         const response = await fetch(url, {
             method: 'DELETE',
-            headers: this.getHeaders()
+            headers: this.getHeaders(),
         });
 
         return this.handleResponse(response);
@@ -115,19 +115,21 @@ export class TodoistClient {
      * @param commands - Array of command objects to execute
      * @returns API response data
      */
-    async sync(commands: Array<{
-        type: string;
-        uuid: string;
-        args: Record<string, any>;
-    }>): Promise<any> {
-        const url = `${ API_SYNC_BASE_URL }/sync`;
+    async sync(
+        commands: Array<{
+            type: string;
+            uuid: string;
+            args: Record<string, any>;
+        }>
+    ): Promise<any> {
+        const url = `${API_SYNC_BASE_URL}/sync`;
 
-        log(`Making SYNC request to: ${ url } with commands:`, JSON.stringify(commands, null, 2));
+        log(`Making SYNC request to: ${url} with commands:`, JSON.stringify(commands, null, 2));
 
         const response = await fetch(url, {
             method: 'POST',
             headers: this.getHeaders(true),
-            body: JSON.stringify({commands})
+            body: JSON.stringify({ commands }),
         });
 
         return this.handleResponse(response);

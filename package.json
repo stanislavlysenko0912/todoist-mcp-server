@@ -22,7 +22,8 @@
     "link": "npm link",
     "unlink": "npm unlink",
     "format": "prettier --write \"src/**/*.{js,ts}\"",
-    "lint-fix": "eslint --fix \"src/**/*.ts\""
+    "lint-fix": "eslint --fix \"src/**/*.ts\"",
+    "fix-all": "npm run format && npm run lint-fix"
   },
   "keywords": [
     "mcp",

@@ -1,150 +1,144 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js'
-import { ToolHandlers } from '../utils/types.js'
-import z from 'zod'
-import { createApiHandler, createBatchApiHandler } from "../utils/handlers.js";
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ToolHandlers } from '../utils/types.js';
+import z from 'zod';
+import { createApiHandler, createBatchApiHandler } from '../utils/handlers.js';
 
 export const SECTION_TOOLS: Tool[] = [
     {
         name: 'get_sections_list',
         description: 'Get all sections from Todoist',
         inputSchema: {
-            type: "object",
+            type: 'object',
             required: [],
             properties: {
                 project_id: {
-                    type: "string",
-                    description: 'Filter sections by project ID'
-                }
-            }
-        }
+                    type: 'string',
+                    description: 'Filter sections by project ID',
+                },
+            },
+        },
     },
     {
         name: 'create_sections',
         description: 'Create new sections in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of section objects to create",
+                    type: 'array',
+                    description: 'Array of section objects to create',
                     items: {
-                        type: "object",
-                        required: ["name", "project_id"],
+                        type: 'object',
+                        required: ['name', 'project_id'],
                         properties: {
                             name: {
-                                type: "string",
-                                description: 'Section name'
+                                type: 'string',
+                                description: 'Section name',
                             },
                             project_id: {
-                                type: "string",
-                                description: 'Project ID this section should belong to'
+                                type: 'string',
+                                description: 'Project ID this section should belong to',
                             },
                             order: {
-                                type: "integer",
-                                description: 'Order among other sections in a project'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                type: 'integer',
+                                description: 'Order among other sections in a project',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
     {
         name: 'get_sections',
         description: 'Get sections from Todoist by ID',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of section identifiers to retrieve",
+                    type: 'array',
+                    description: 'Array of section identifiers to retrieve',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the section to retrieve (preferred over name)'
+                                type: 'string',
+                                description: 'ID of the section to retrieve (preferred over name)',
                             },
                             name: {
-                                type: "string",
-                                description: 'Name of the section to retrieve'
-                            }
+                                type: 'string',
+                                description: 'Name of the section to retrieve',
+                            },
                         },
-                        anyOf: [
-                            {required: ["id"]},
-                            {required: ["name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['id'] }, { required: ['name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'update_sections',
         description: 'Update sections in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of section objects to update",
+                    type: 'array',
+                    description: 'Array of section objects to update',
                     items: {
-                        type: "object",
-                        required: ["id"],
+                        type: 'object',
+                        required: ['id'],
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the section to update'
+                                type: 'string',
+                                description: 'ID of the section to update',
                             },
                             name: {
-                                type: "string",
-                                description: 'New section name'
+                                type: 'string',
+                                description: 'New section name',
                             },
                             order: {
-                                type: "integer",
-                                description: 'New order among other sections in a project'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                type: 'integer',
+                                description: 'New order among other sections in a project',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
     {
         name: 'delete_sections',
         description: 'Delete sections in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of sections to delete",
+                    type: 'array',
+                    description: 'Array of sections to delete',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the section to delete (preferred over name)'
+                                type: 'string',
+                                description: 'ID of the section to delete (preferred over name)',
                             },
                             name: {
-                                type: "string",
-                                description: 'Name of the section to delete'
-                            }
+                                type: 'string',
+                                description: 'Name of the section to delete',
+                            },
                         },
-                        anyOf: [
-                            {required: ["id"]},
-                            {required: ["name"]}
-                        ]
-                    }
-                }
-            }
-        }
-    }
-]
+                        anyOf: [{ required: ['id'] }, { required: ['name'] }],
+                    },
+                },
+            },
+        },
+    },
+];
 
 export const SECTION_HANDLERS: ToolHandlers = {
     get_sections_list: createApiHandler({
@@ -179,9 +173,8 @@ export const SECTION_HANDLERS: ToolHandlers = {
         mode: 'read',
         idField: 'id',
         nameField: 'name',
-        findByName: (name, items) => items.find(
-            item => item.name.toLowerCase().includes(name.toLowerCase())
-        ),
+        findByName: (name, items) =>
+            items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
     }),
 
     update_sections: createBatchApiHandler({
@@ -208,8 +201,7 @@ export const SECTION_HANDLERS: ToolHandlers = {
         nameField: 'name',
         errorPrefix: 'Failed to delete sections',
         mode: 'delete',
-        findByName: (name, items) => items.find(
-            item => item.name.toLowerCase().includes(name.toLowerCase())
-        ),
+        findByName: (name, items) =>
+            items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
     }),
-}
+};

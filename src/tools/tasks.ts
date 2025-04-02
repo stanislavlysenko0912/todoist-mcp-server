@@ -1,336 +1,337 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js'
-import { ToolHandlers } from '../utils/types.js'
-import z from 'zod'
-import { createApiHandler, createBatchApiHandler, createSyncApiHandler } from "../utils/handlers.js";
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ToolHandlers } from '../utils/types.js';
+import z from 'zod';
+import {
+    createApiHandler,
+    createBatchApiHandler,
+    createSyncApiHandler,
+} from '../utils/handlers.js';
 
 /// Common fields for create and update tasks
 const create_fields = {
     content: {
-        type: "string",
-        description: 'Task content. This value may contain markdown-formatted text and hyperlinks'
+        type: 'string',
+        description: 'Task content. This value may contain markdown-formatted text and hyperlinks',
     },
     description: {
-        type: "string",
-        description: 'A description for the task. This value may contain markdown-formatted text and hyperlinks'
+        type: 'string',
+        description:
+            'A description for the task. This value may contain markdown-formatted text and hyperlinks',
     },
     labels: {
-        type: "array",
+        type: 'array',
         items: {
-            type: "string"
+            type: 'string',
         },
-        description: 'The task\'s labels (a list of names that may represent either personal or shared labels)'
+        description:
+            "The task's labels (a list of names that may represent either personal or shared labels)",
     },
     priority: {
-        type: "integer",
+        type: 'integer',
         description: 'Task priority from 1 (normal) to 4 (urgent)',
-        enum: [1, 2, 3, 4]
+        enum: [1, 2, 3, 4],
     },
     due_string: {
-        type: "string",
-        description: 'Human defined task due date (ex.: "next Monday", "Tomorrow"). Value is set using local (not UTC) time, if not in english provided, due_lang should be set to the language of the string',
+        type: 'string',
+        description:
+            'Human defined task due date (ex.: "next Monday", "Tomorrow"). Value is set using local (not UTC) time, if not in english provided, due_lang should be set to the language of the string',
     },
     due_date: {
-        type: "string",
-        description: 'Specific date in YYYY-MM-DD format relative to user\'s timezone'
+        type: 'string',
+        description: "Specific date in YYYY-MM-DD format relative to user's timezone",
     },
     due_datetime: {
-        type: "string",
-        description: 'Specific date and time in RFC3339 format in UTC'
+        type: 'string',
+        description: 'Specific date and time in RFC3339 format in UTC',
     },
     due_lang: {
-        type: "string",
-        description: '2-letter code specifying language in case due_string is not written in English',
+        type: 'string',
+        description:
+            '2-letter code specifying language in case due_string is not written in English',
         default: 'en',
     },
     assignee_id: {
-        type: "string",
-        description: 'The responsible user ID (only applies to shared tasks)'
+        type: 'string',
+        description: 'The responsible user ID (only applies to shared tasks)',
     },
     duration: {
-        type: "integer",
-        description: 'A positive (greater than zero) integer for the amount of duration_unit the task will take'
+        type: 'integer',
+        description:
+            'A positive (greater than zero) integer for the amount of duration_unit the task will take',
     },
     duration_unit: {
-        type: "string",
-        description: 'The unit of time that the duration field represents. Must be either minute or day',
-        enum: ["minute", "day"]
-    }
-}
+        type: 'string',
+        description:
+            'The unit of time that the duration field represents. Must be either minute or day',
+        enum: ['minute', 'day'],
+    },
+};
 
 export const TASKS_TOOLS: Tool[] = [
     {
         name: 'get_tasks_list',
         description: 'Get tasks list from Todoist',
         inputSchema: {
-            type: "object",
+            type: 'object',
             required: [],
             properties: {
                 project_id: {
-                    type: "string",
+                    type: 'string',
                     description: 'Filter tasks by project ID',
                 },
                 section_id: {
-                    type: "string",
+                    type: 'string',
                     description: 'Filter tasks by section ID',
                 },
                 label: {
-                    type: "string",
+                    type: 'string',
                     description: 'Filter by label name',
                 },
                 filter: {
-                    type: "string",
-                    description: 'Natural language english filter like "search: keyword", "date: today", "date before: +4 hours", "date after: May 5", "no date", "no time", "overdue", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "P1 | P2", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "Today & !#Work"',
+                    type: 'string',
+                    description:
+                        'Natural language english filter like "search: keyword", "date: today", "date before: +4 hours", "date after: May 5", "no date", "no time", "overdue", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "P1 | P2", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "Today & !#Work"',
                 },
                 ids: {
-                    type: "string",
-                    description: 'A list of the task IDs to retrieve, this should be a comma separated list',
+                    type: 'string',
+                    description:
+                        'A list of the task IDs to retrieve, this should be a comma separated list',
                 },
                 limit: {
-                    type: "number",
-                    description: 'Maximum number of tasks to return, provided by server not api of todoist',
-                    default: 50
-                }
-            }
-        }
+                    type: 'number',
+                    description:
+                        'Maximum number of tasks to return, provided by server not api of todoist',
+                    default: 50,
+                },
+            },
+        },
     },
     {
         name: 'create_tasks',
         description: 'Create tasks in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to create",
+                    type: 'array',
+                    description: 'Array of tasks to create',
                     items: {
-                        type: "object",
-                        required: ["content"],
+                        type: 'object',
+                        required: ['content'],
                         properties: {
                             ...create_fields,
                             project_id: {
-                                type: "string",
-                                description: 'Task project ID. If not set, task is put to user\'s Inbox'
+                                type: 'string',
+                                description:
+                                    "Task project ID. If not set, task is put to user's Inbox",
                             },
                             section_id: {
-                                type: "string",
-                                description: 'ID of section to put task into'
+                                type: 'string',
+                                description: 'ID of section to put task into',
                             },
                             parent_id: {
-                                type: "string",
-                                description: 'Parent task ID'
+                                type: 'string',
+                                description: 'Parent task ID',
                             },
                             order: {
-                                type: "integer",
-                                description: 'Non-zero integer value used by clients to sort tasks under the same parent'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                type: 'integer',
+                                description:
+                                    'Non-zero integer value used by clients to sort tasks under the same parent',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
     {
         name: 'get_tasks',
         description: 'Get a tasks from Todoist by ID or name',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of task identifiers to retrieve",
+                    type: 'array',
+                    description: 'Array of task identifiers to retrieve',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to retrieve (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to retrieve (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to retrieve (if ID not provided)"
-                            }
+                                type: 'string',
+                                description: 'Name of the task to retrieve (if ID not provided)',
+                            },
                         },
-                        anyOf: [
-                            {required: ["task_id"]},
-                            {required: ["task_name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['task_id'] }, { required: ['task_name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'update_tasks',
         description: 'Update tasks in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to update",
+                    type: 'array',
+                    description: 'Array of tasks to update',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to update (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to update (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to update (if ID not provided)"
+                                type: 'string',
+                                description: 'Name of the task to update (if ID not provided)',
                             },
-                            ...create_fields
+                            ...create_fields,
                         },
-                        anyOf: [
-                            {required: ["task_id"]},
-                            {required: ["task_name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['task_id'] }, { required: ['task_name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'close_tasks',
         description: 'Close tasks in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to close",
+                    type: 'array',
+                    description: 'Array of tasks to close',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to close (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to close (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to close (if ID not provided)"
-                            }
+                                type: 'string',
+                                description: 'Name of the task to close (if ID not provided)',
+                            },
                         },
-                        anyOf: [
-                            {required: ["task_id"]},
-                            {required: ["task_name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['task_id'] }, { required: ['task_name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'reopen_tasks',
         description: 'Reopen tasks in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to reopen",
+                    type: 'array',
+                    description: 'Array of tasks to reopen',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to reopen (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to reopen (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to reopen (if ID not provided)"
-                            }
+                                type: 'string',
+                                description: 'Name of the task to reopen (if ID not provided)',
+                            },
                         },
-                        anyOf: [
-                            {required: ["task_id"]},
-                            {required: ["task_name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['task_id'] }, { required: ['task_name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'delete_tasks',
         description: 'Delete tasks in Todoist, be careful, this action is irreversible',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to delete",
+                    type: 'array',
+                    description: 'Array of tasks to delete',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to delete (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to delete (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to delete (if ID not provided)"
-                            }
+                                type: 'string',
+                                description: 'Name of the task to delete (if ID not provided)',
+                            },
                         },
-                        anyOf: [
-                            {required: ["task_id"]},
-                            {required: ["task_name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['task_id'] }, { required: ['task_name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'move_tasks',
         description: 'Move task in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of tasks to move",
-                    additionalDescription: "Set only one of: parent_id, section_id or project_id. To remove an item from a section, use only project_id with its current project value",
+                    type: 'array',
+                    description: 'Array of tasks to move',
+                    additionalDescription:
+                        'Set only one of: parent_id, section_id or project_id. To remove an item from a section, use only project_id with its current project value',
                     required: ['id'],
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             task_id: {
-                                type: "string",
-                                description: "ID of the task to move (preferred)"
+                                type: 'string',
+                                description: 'ID of the task to move (preferred)',
                             },
                             task_name: {
-                                type: "string",
-                                description: "Name of the task to move (if ID not provided)"
+                                type: 'string',
+                                description: 'Name of the task to move (if ID not provided)',
                             },
                             parent_id: {
-                                type: "string",
-                                description: "ID of the parent task to move the task to"
+                                type: 'string',
+                                description: 'ID of the parent task to move the task to',
                             },
                             section_id: {
-                                type: "string",
-                                description: "ID of the section to move the task to"
+                                type: 'string',
+                                description: 'ID of the section to move the task to',
                             },
                             project_id: {
-                                type: "string",
-                                description: "ID of the project to move the task to"
+                                type: 'string',
+                                description: 'ID of the project to move the task to',
                             },
                         },
                         anyOf: [
-                            {required: ["parent_id"]},
-                            {required: ["section_id"]},
-                            {required: ["project_id"]}
-                        ]
-                    }
-                }
-            }
-        }
+                            { required: ['parent_id'] },
+                            { required: ['section_id'] },
+                            { required: ['project_id'] },
+                        ],
+                    },
+                },
+            },
+        },
     },
 ];
 
@@ -351,7 +352,7 @@ export const TASK_HANDLERS: ToolHandlers = {
             let filteredTasks = results;
             filteredTasks = filteredTasks.slice(0, args.limit || 50);
             return filteredTasks;
-        }
+        },
     }),
 
     create_tasks: createBatchApiHandler({
@@ -370,12 +371,12 @@ export const TASK_HANDLERS: ToolHandlers = {
             due_lang: z.string().optional(),
             assignee_id: z.string().optional(),
             duration: z.number().int().positive().optional(),
-            duration_unit: z.enum(["minute", "day"]).optional()
+            duration_unit: z.enum(['minute', 'day']).optional(),
         },
         method: 'POST',
         path: '/tasks',
         errorPrefix: 'Failed to create tasks',
-        mode: 'create'
+        mode: 'create',
     }),
 
     get_tasks: createBatchApiHandler({
@@ -389,9 +390,10 @@ export const TASK_HANDLERS: ToolHandlers = {
         mode: 'read',
         idField: 'task_id',
         nameField: 'task_name',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        )
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
     }),
 
     update_tasks: createBatchApiHandler({
@@ -408,7 +410,7 @@ export const TASK_HANDLERS: ToolHandlers = {
             due_lang: z.string().optional(),
             assignee_id: z.string().optional(),
             duration: z.number().int().positive().optional(),
-            duration_unit: z.enum(["minute", "day"]).optional()
+            duration_unit: z.enum(['minute', 'day']).optional(),
         },
         method: 'POST',
         path: '/tasks/{id}',
@@ -416,9 +418,10 @@ export const TASK_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'task_id',
         nameField: 'task_name',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        )
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
     }),
 
     close_tasks: createBatchApiHandler({
@@ -433,9 +436,10 @@ export const TASK_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'task_id',
         nameField: 'task_name',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        )
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
     }),
 
     reopen_tasks: createBatchApiHandler({
@@ -450,9 +454,10 @@ export const TASK_HANDLERS: ToolHandlers = {
         mode: 'update',
         idField: 'task_id',
         nameField: 'task_name',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        )
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
     }),
 
     delete_tasks: createBatchApiHandler({
@@ -466,9 +471,10 @@ export const TASK_HANDLERS: ToolHandlers = {
         mode: 'delete',
         idField: 'task_id',
         nameField: 'task_name',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        )
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
     }),
 
     move_tasks: createSyncApiHandler({
@@ -484,16 +490,17 @@ export const TASK_HANDLERS: ToolHandlers = {
         idField: 'task_id',
         nameField: 'task_name',
         lookupPath: '/tasks',
-        findByName: (name, items) => items.find(item =>
-            item.content && item.content.toLowerCase().includes(name.toLowerCase())
-        ),
+        findByName: (name, items) =>
+            items.find(
+                item => item.content && item.content.toLowerCase().includes(name.toLowerCase())
+            ),
         buildCommandArgs: (item, itemId) => {
             const args: {
                 id: string;
                 parent_id?: string;
                 section_id?: string;
                 project_id?: string;
-            } = {id: itemId};
+            } = { id: itemId };
 
             // Only one destination option
             if (item.parent_id) args.parent_id = item.parent_id;
@@ -502,22 +509,20 @@ export const TASK_HANDLERS: ToolHandlers = {
 
             return args;
         },
-        validateItem: (item) => {
+        validateItem: item => {
             // Ensure exactly one destination is specified
-            const destinationCount = [
-                item.parent_id,
-                item.section_id,
-                item.project_id
-            ].filter(Boolean).length;
+            const destinationCount = [item.parent_id, item.section_id, item.project_id].filter(
+                Boolean
+            ).length;
 
             if (destinationCount !== 1) {
                 return {
                     valid: false,
-                    error: 'Exactly one of parent_id, section_id, or project_id must be provided'
+                    error: 'Exactly one of parent_id, section_id, or project_id must be provided',
                 };
             }
 
-            return {valid: true};
-        }
-    })
+            return { valid: true };
+        },
+    }),
 };
