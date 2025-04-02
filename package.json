@@ -20,7 +20,9 @@
     "lint": "eslint src/**/*.ts",
     "prepublishOnly": "npm run build",
     "link": "npm link",
-    "unlink": "npm unlink"
+    "unlink": "npm unlink",
+    "format": "prettier --write \"src/**/*.{js,ts}\"",
+    "lint-fix": "eslint --fix \"src/**/*.ts\""
   },
   "keywords": [
     "mcp",
@@ -46,11 +48,11 @@
     "@eslint/js": "^9.23.0",
     "@types/node": "^20.0.0",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "@vitest/coverage-v8": "^1.0.0",
     "eslint": "^9.23.0",
+    "eslint-config-prettier": "^10.1.1",
     "globals": "^16.0.0",
+    "prettier": "^3.5.3",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.28.0",
