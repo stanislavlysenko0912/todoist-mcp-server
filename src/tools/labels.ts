@@ -1,218 +1,219 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js'
-import { ToolHandlers } from '../utils/types.js'
-import z from 'zod'
-import { createApiHandler, createBatchApiHandler } from "../utils/handlers.js";
+import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ToolHandlers } from '../utils/types.js';
+import z from 'zod';
+import { createApiHandler, createBatchApiHandler } from '../utils/handlers.js';
 
 export const LABELS_TOOLS: Tool[] = [
     {
         name: 'get_labels_list',
         description: 'Get all personal labels from Todoist',
         inputSchema: {
-            type: "object",
-            required: []
-        }
+            type: 'object',
+            required: [],
+        },
     },
     {
         name: 'create_labels',
         description: 'Create a new personal labels in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of labels objects to create",
+                    type: 'array',
+                    description: 'Array of labels objects to create',
                     items: {
-                        type: "object",
-                        required: ["name"],
+                        type: 'object',
+                        required: ['name'],
                         properties: {
                             name: {
-                                type: "string",
-                                description: 'Name of the label'
+                                type: 'string',
+                                description: 'Name of the label',
                             },
                             order: {
-                                type: "integer",
-                                description: 'Label order'
+                                type: 'integer',
+                                description: 'Label order',
                             },
                             color: {
-                                type: "string",
-                                description: 'The color of the label icon. Refer to the name column in the `utils_get_colors` tool for more info'
+                                type: 'string',
+                                description:
+                                    'The color of the label icon. Refer to the name column in the `utils_get_colors` tool for more info',
                             },
                             is_favorite: {
-                                type: "boolean",
-                                description: 'Whether the label is a favorite (a true or false value)'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                type: 'boolean',
+                                description:
+                                    'Whether the label is a favorite (a true or false value)',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
     {
         name: 'get_labels',
         description: 'Get a personal labels from Todoist by ID',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of label identifiers to retrieve",
+                    type: 'array',
+                    description: 'Array of label identifiers to retrieve',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the label to retrieve (preferred over name)'
+                                type: 'string',
+                                description: 'ID of the label to retrieve (preferred over name)',
                             },
                             name: {
-                                type: "string",
-                                description: 'Name of the label to retrieve'
-                            }
+                                type: 'string',
+                                description: 'Name of the label to retrieve',
+                            },
                         },
-                        anyOf: [
-                            {required: ["id"]},
-                            {required: ["name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['id'] }, { required: ['name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'update_labels',
         description: 'Update a personal label in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of labels objects to update, need to provide at least one of the following: id, name",
-                    additionalDescription: "At least one of name, order, color or is_favorite fields must be provided besides the required id",
+                    type: 'array',
+                    description:
+                        'Array of labels objects to update, need to provide at least one of the following: id, name',
+                    additionalDescription:
+                        'At least one of name, order, color or is_favorite fields must be provided besides the required id',
                     items: {
-                        type: "object",
-                        required: ["id"],
+                        type: 'object',
+                        required: ['id'],
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the label to update'
+                                type: 'string',
+                                description: 'ID of the label to update',
                             },
                             name: {
-                                type: "string",
-                                description: 'New name of the label'
+                                type: 'string',
+                                description: 'New name of the label',
                             },
                             order: {
-                                type: "integer",
-                                description: 'Number that is used by clients to sort list of labels'
+                                type: 'integer',
+                                description:
+                                    'Number that is used by clients to sort list of labels',
                             },
                             color: {
-                                type: "string",
-                                description: 'The color of the label icon. Refer to the name column in the Colors guide for more info'
+                                type: 'string',
+                                description:
+                                    'The color of the label icon. Refer to the name column in the Colors guide for more info',
                             },
                             is_favorite: {
-                                type: "boolean",
-                                description: 'Whether the label is a favorite (a true or false value)'
+                                type: 'boolean',
+                                description:
+                                    'Whether the label is a favorite (a true or false value)',
                             },
                         },
-                    }
-                }
-            }
-        }
+                    },
+                },
+            },
+        },
     },
     {
         name: 'delete_labels',
         description: 'Delete a personal labels in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of labels to delete",
+                    type: 'array',
+                    description: 'Array of labels to delete',
                     items: {
-                        type: "object",
+                        type: 'object',
                         properties: {
                             id: {
-                                type: "string",
-                                description: 'ID of the label to delete (preferred over name)'
+                                type: 'string',
+                                description: 'ID of the label to delete (preferred over name)',
                             },
                             name: {
-                                "type": "string",
-                                "description": "Name of the label to delete"
-                            }
+                                type: 'string',
+                                description: 'Name of the label to delete',
+                            },
                         },
-                        anyOf: [
-                            {required: ["id"]},
-                            {required: ["name"]}
-                        ]
-                    }
-                }
-            }
-        }
+                        anyOf: [{ required: ['id'] }, { required: ['name'] }],
+                    },
+                },
+            },
+        },
     },
     {
         name: 'get_shared_labels',
         description: 'Get all shared labels from Todoist',
         inputSchema: {
-            type: "object",
+            type: 'object',
             required: [],
-            properties: {}
-        }
+            properties: {},
+        },
     },
     {
         name: 'rename_shared_labels',
         description: 'Rename a shared labels in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of shared labels objects to rename",
+                    type: 'array',
+                    description: 'Array of shared labels objects to rename',
                     items: {
-                        type: "object",
-                        required: ["name", "new_name"],
+                        type: 'object',
+                        required: ['name', 'new_name'],
                         properties: {
                             name: {
-                                type: "string",
-                                description: 'The name of the existing label to rename'
+                                type: 'string',
+                                description: 'The name of the existing label to rename',
                             },
                             new_name: {
-                                type: "string",
-                                description: 'The new name for the label'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                                type: 'string',
+                                description: 'The new name for the label',
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
     {
         name: 'remove_shared_labels',
         description: 'Remove a shared labels in Todoist',
         inputSchema: {
-            type: "object",
-            required: ["items"],
+            type: 'object',
+            required: ['items'],
             properties: {
                 items: {
-                    type: "array",
-                    description: "Array of labels objects to remove",
+                    type: 'array',
+                    description: 'Array of labels objects to remove',
                     items: {
-                        type: "object",
-                        required: ["name"],
+                        type: 'object',
+                        required: ['name'],
                         properties: {
                             name: {
-                                type: "string",
-                                description: 'The name of the label to remove'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-]
+                                type: 'string',
+                                description: 'The name of the label to remove',
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+];
 
 export const LABEL_HANDLERS: ToolHandlers = {
     get_labels_list: createApiHandler({
@@ -246,9 +247,8 @@ export const LABEL_HANDLERS: ToolHandlers = {
         mode: 'read',
         idField: 'id',
         nameField: 'name',
-        findByName: (name, items) => items.find(
-            item => item.name.toLowerCase().includes(name.toLowerCase())
-        ),
+        findByName: (name, items) =>
+            items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
     }),
 
     update_labels: createBatchApiHandler({
@@ -277,9 +277,8 @@ export const LABEL_HANDLERS: ToolHandlers = {
         nameField: 'name',
         errorPrefix: 'Failed to delete labels',
         mode: 'delete',
-        findByName: (name, items) => items.find(
-            item => item.name.toLowerCase().includes(name.toLowerCase())
-        ),
+        findByName: (name, items) =>
+            items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
     }),
 
     get_shared_labels: createApiHandler({
@@ -309,4 +308,4 @@ export const LABEL_HANDLERS: ToolHandlers = {
         errorPrefix: 'Failed to remove shared labels',
         mode: 'delete',
     }),
-}
+};
