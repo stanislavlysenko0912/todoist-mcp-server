@@ -90,7 +90,7 @@ export const TASKS_TOOLS: Tool[] = [
                 filter: {
                     type: 'string',
                     description:
-                        'Natural language english filter like "search: keyword", "date: today", "date before: +4 hours", "date after: May 5", "no date", "no time", "overdue", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "P1 | P2", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "Today & !#Work"',
+                        'Natural language english filter like "search: keyword", "today", "date before: +4 hours", "date after: May 5", "no date", "no time", "overdue", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "P1 | P2", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "Today & !#Work"',
                 },
                 ids: {
                     type: 'string',
