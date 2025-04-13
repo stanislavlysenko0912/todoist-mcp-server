@@ -32,8 +32,8 @@ createBatchApiHandler({
     name: 'get_projects',
     description: 'Get projects from Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the project to retrieve (preferred over name)'),
+        name: z.string().optional().describe('Name of the project to retrieve'),
     },
     method: 'GET',
     path: '/projects/{id}',
@@ -42,14 +42,24 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createBatchApiHandler({
     name: 'update_projects',
     description: 'Update projects in Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the project to update (preferred over name)'),
+        name: z.string().optional().describe('Name of the project to update'),
         color: z.string().optional(),
         is_favorite: z.boolean().optional(),
         view_style: z.enum(['list', 'board']).optional(),
@@ -61,14 +71,24 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createBatchApiHandler({
     name: 'delete_projects',
     description: 'Delete projects from Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the project to delete (preferred over name)'),
+        name: z.string().optional().describe('Name of the project to delete'),
     },
     method: 'DELETE',
     path: '/projects/{id}',
@@ -77,6 +97,16 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createApiHandler({
@@ -93,8 +123,8 @@ createSyncApiHandler({
     name: 'move_projects',
     description: 'Move a projects to a different parent in Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the project to move (preferred over name)'),
+        name: z.string().optional().describe('Name of the project to move'),
         parent_id: z.string().nullable(),
     },
     commandType: 'project_move',
@@ -108,5 +138,15 @@ createSyncApiHandler({
             id: itemId,
             parent_id: item.parent_id,
         };
+    },
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
     },
 });

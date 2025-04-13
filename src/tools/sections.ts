@@ -28,8 +28,8 @@ createBatchApiHandler({
     name: 'get_sections',
     description: 'Get sections from Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the section to retrieve (preferred over name)'),
+        name: z.string().optional().describe('Name of the section to retrieve'),
     },
     method: 'GET',
     path: '/sections/{id}',
@@ -38,6 +38,16 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createBatchApiHandler({
@@ -57,8 +67,8 @@ createBatchApiHandler({
     name: 'delete_sections',
     description: 'Delete sections in Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the section to delete (preferred over name)'),
+        name: z.string().optional().describe('Name of the section to delete'),
     },
     method: 'DELETE',
     path: '/sections/{id}',
@@ -67,4 +77,14 @@ createBatchApiHandler({
     mode: 'delete',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });

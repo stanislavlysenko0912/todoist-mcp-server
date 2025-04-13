@@ -15,7 +15,10 @@ createBatchApiHandler({
     itemSchema: {
         name: z.string(),
         order: z.number().int().optional(),
-        color: z.string().optional(),
+        color: z
+            .string()
+            .optional()
+            .describe('Refer to the name column in the `utils_get_colors` tool for more info'),
         is_favorite: z.boolean().optional(),
     },
     method: 'POST',
@@ -27,8 +30,8 @@ createBatchApiHandler({
     name: 'get_labels',
     description: 'Get a personal label from Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the label to retrieve (preferred over name)'),
+        name: z.string().optional().describe('Name of the label to retrieve'),
     },
     method: 'GET',
     path: '/labels/{id}',
@@ -37,6 +40,16 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createBatchApiHandler({
@@ -46,7 +59,10 @@ createBatchApiHandler({
         id: z.string(),
         name: z.string().optional(),
         order: z.number().int().optional(),
-        color: z.string().optional(),
+        color: z
+            .string()
+            .optional()
+            .describe('Refer to the name column in the `utils_get_colors` tool for more info'),
         is_favorite: z.boolean().optional(),
     },
     method: 'POST',
@@ -59,8 +75,8 @@ createBatchApiHandler({
     name: 'delete_labels',
     description: 'Delete a personal label in Todoist',
     itemSchema: {
-        id: z.string().optional(),
-        name: z.string().optional(),
+        id: z.string().optional().describe('ID of the label to delete (preferred over name)'),
+        name: z.string().optional().describe('Name of the label to delete'),
     },
     method: 'DELETE',
     path: '/labels/{id}',
@@ -69,6 +85,16 @@ createBatchApiHandler({
     mode: 'delete',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
+    validateItem: item => {
+        if (!item.name && !item.id) {
+            return {
+                valid: false,
+                error: 'Either name or id must be provided',
+            };
+        }
+
+        return { valid: true };
+    },
 });
 
 createApiHandler({

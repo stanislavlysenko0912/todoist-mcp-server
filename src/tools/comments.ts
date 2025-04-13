@@ -5,8 +5,8 @@ createApiHandler({
     name: 'get_comments_list',
     description: 'Get comments list from Todoist',
     schemaShape: {
-        project_id: z.string().optional(),
-        task_id: z.string().optional(),
+        project_id: z.string().optional().describe('Filter by project'),
+        task_id: z.string().optional().describe('Filter by task'),
     },
     method: 'GET',
     path: '/comments',
@@ -18,7 +18,7 @@ createBatchApiHandler({
     itemSchema: {
         task_id: z.string().optional(),
         project_id: z.string().optional(),
-        content: z.string(),
+        content: z.string().describe('Markdown-formatted text and hyperlinks'),
         // attachment: z.object({}).optional(),
     },
     method: 'POST',
@@ -43,7 +43,7 @@ createBatchApiHandler({
     description: 'Update comments in Todoist',
     itemSchema: {
         id: z.string(),
-        content: z.string(),
+        content: z.string().describe('Markdown-formatted text and hyperlinks'),
     },
     method: 'POST',
     path: '/comments/{id}',

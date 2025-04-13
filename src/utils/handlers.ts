@@ -129,6 +129,7 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
         idField?: string;
         nameField?: string;
         findByName?: (name: string, items: any[]) => any | undefined;
+        validateItem?: (item: any) => { valid: boolean; error?: string };
     } & ( // Or we specify full path
         | {
               path: string;
@@ -143,9 +144,24 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
           }
     )
 ) {
+    const enhancedItemSchema: z.ZodTypeAny =
+        options.idField && options.nameField
+            ? z
+                  .object(options.itemSchema)
+                  .refine(
+                      data =>
+                          data[options.idField!] !== undefined ||
+                          data[options.nameField!] !== undefined,
+                      {
+                          message: `Either ${options.idField} or ${options.nameField} must be provided`,
+                          path: [options.idField, options.nameField],
+                      }
+                  )
+            : z.object(options.itemSchema);
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const batchSchema = z.object({
-        items: z.array(z.object(options.itemSchema)),
+        items: z.array(enhancedItemSchema),
     });
 
     const handler = async (args: z.infer<typeof batchSchema>): Promise<any> => {
@@ -170,6 +186,18 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
 
         const results = await Promise.all(
             items.map(async item => {
+                if (options.validateItem) {
+                    const validation = options.validateItem(item);
+
+                    if (!validation.valid) {
+                        return {
+                            success: false,
+                            error: validation.error || 'Validation failed',
+                            item,
+                        };
+                    }
+                }
+
                 try {
                     let finalPath = '';
                     const apiParams = { ...item };
@@ -290,9 +318,7 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
     return createHandler(
         options.name,
         options.description,
-        {
-            items: z.array(z.object(options.itemSchema)),
-        },
+        { items: z.array(enhancedItemSchema) },
         handler
     );
 }
