@@ -14,12 +14,3 @@ export type ToolResult = {
     content: Array<{ type: string; text: string }>;
     isError?: boolean;
 };
-
-export type PromptResult = {
-    messages: Array<{ role: string; content: { type: string; text: string } }>;
-};
-
-export type PromptHandlers = Record<
-    string,
-    (request: z.infer<typeof GetPromptRequestSchema>) => Promise<PromptResult>
->;

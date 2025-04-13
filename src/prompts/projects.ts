@@ -1,5 +1,4 @@
 import { server, todoistApi } from "../clients.js";
-import { PromptHandlers } from '../utils/types.js';
 
 type SectionType = {
     id: string | number;
