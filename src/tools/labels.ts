@@ -40,16 +40,6 @@ createBatchApiHandler({
     nameField: 'name',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.name && !item.id) {
-            return {
-                valid: false,
-                error: 'Either name or id must be provided',
-            };
-        }
-
-        return { valid: true };
-    },
 });
 
 createBatchApiHandler({
@@ -85,16 +75,6 @@ createBatchApiHandler({
     mode: 'delete',
     findByName: (name, items) =>
         items.find(item => item.name.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.name && !item.id) {
-            return {
-                valid: false,
-                error: 'Either name or id must be provided',
-            };
-        }
-
-        return { valid: true };
-    },
 });
 
 createApiHandler({

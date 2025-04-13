@@ -102,15 +102,6 @@ createBatchApiHandler({
     nameField: 'task_name',
     findByName: (name, items) =>
         items.find(item => item.content.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.task_id && !item.task_name) {
-            return {
-                valid: false,
-                error: 'Either task_id or task_name must be provided',
-            };
-        }
-        return { valid: true };
-    },
 });
 
 createBatchApiHandler({
@@ -128,15 +119,6 @@ createBatchApiHandler({
     nameField: 'task_name',
     findByName: (name, items) =>
         items.find(item => item.content.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.task_id && !item.task_name) {
-            return {
-                valid: false,
-                error: 'Either task_id or task_name must be provided',
-            };
-        }
-        return { valid: true };
-    },
 });
 
 createBatchApiHandler({
@@ -153,15 +135,6 @@ createBatchApiHandler({
     nameField: 'task_name',
     findByName: (name, items) =>
         items.find(item => item.content.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.task_id && !item.task_name) {
-            return {
-                valid: false,
-                error: 'Either task_id or task_name must be provided',
-            };
-        }
-        return { valid: true };
-    },
 });
 
 createBatchApiHandler({
@@ -178,16 +151,6 @@ createBatchApiHandler({
     nameField: 'task_name',
     findByName: (name, items) =>
         items.find(item => item.content.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.task_id && !item.task_name) {
-            return {
-                valid: false,
-                error: 'Either task_id or task_name must be provided',
-            };
-        }
-
-        return { valid: true };
-    },
 });
 
 createBatchApiHandler({
@@ -204,16 +167,6 @@ createBatchApiHandler({
     nameField: 'task_name',
     findByName: (name, items) =>
         items.find(item => item.content.toLowerCase().includes(name.toLowerCase())),
-    validateItem: item => {
-        if (!item.task_id && !item.task_name) {
-            return {
-                valid: false,
-                error: 'Either task_id or task_name must be provided',
-            };
-        }
-
-        return { valid: true };
-    },
 });
 
 createSyncApiHandler({
