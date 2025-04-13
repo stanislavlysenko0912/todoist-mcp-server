@@ -171,7 +171,8 @@ createBatchApiHandler({
 
 createSyncApiHandler({
     name: 'move_tasks',
-    description: 'Move tasks to a different parent or section in Todoist',
+    description:
+        'Move tasks to a different parent or section in Todoist. Exactly one of parent_id, section_id, or project_id must be provided',
     itemSchema: {
         task_id: z.string().optional(),
         task_name: z.string().optional(),
