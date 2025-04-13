@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { z } from 'zod';
-import { log, todoistApi } from './helpers.js';
+import { log } from './helpers.js';
+import { todoistApi } from "../clients.js";
 import { ToolResult } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
 

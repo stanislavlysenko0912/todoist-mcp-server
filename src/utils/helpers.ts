@@ -13,6 +13,5 @@ export const config = {
     API_KEY: process.env.API_KEY ?? '',
 };
 
-export const todoistApi = new TodoistClient(config.API_KEY);
 
 export { version } from './version.js';
