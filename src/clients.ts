@@ -7,6 +7,9 @@ export const todoistApi = new TodoistClient(config.API_KEY);
 export const server = new McpServer(
     {
         name: 'todoist-mcp',
-        version,
+        version
+    },
+    {
+        instructions: "You this server to interact with Todoist API"
     }
 );
