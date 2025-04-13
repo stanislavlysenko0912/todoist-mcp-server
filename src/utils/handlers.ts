@@ -144,22 +144,28 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
           }
     )
 ) {
-    const enhancedItemSchema: z.ZodTypeAny =
-        options.idField && options.nameField
-            ? z
-                  .object(options.itemSchema)
-                  .refine(
-                      data =>
-                          data[options.idField!] !== undefined ||
-                          data[options.nameField!] !== undefined,
-                      {
-                          message: `Either ${options.idField} or ${options.nameField} must be provided`,
-                          path: [options.idField, options.nameField],
-                      }
-                  )
-            : z.object(options.itemSchema);
+    // Create basic description, we cant properly use 'anyOf' here so for now we will add info to description
+    let finalDescription = options.description;
+    const requiresIdOrName = options.idField && options.nameField && options.mode !== 'create';
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    if (requiresIdOrName) {
+        const requirementText = `\nEither '${options.idField}' or the '${options.nameField}' to identify the target.`;
+        finalDescription += requirementText;
+    }
+
+    const itemSchemaObject = z.object(options.itemSchema);
+
+    const enhancedItemSchema: z.ZodTypeAny = requiresIdOrName
+        ? itemSchemaObject.refine(
+              (data: any) =>
+                  data[options.idField!] !== undefined || data[options.nameField!] !== undefined,
+              {
+                  message: `Either ${options.idField} or ${options.nameField} must be provided`,
+                  path: [options.idField!, options.nameField!],
+              }
+          )
+        : itemSchemaObject;
+
     const batchSchema = z.object({
         items: z.array(enhancedItemSchema),
     });
@@ -315,12 +321,7 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
         };
     };
 
-    return createHandler(
-        options.name,
-        options.description,
-        { items: z.array(enhancedItemSchema) },
-        handler
-    );
+    return createHandler(options.name, finalDescription, batchSchema.shape, handler);
 }
 
 export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
