@@ -1,4 +1,4 @@
-import { todoistApi } from '../utils/helpers.js';
+import { server, todoistApi } from "../clients.js";
 import { PromptHandlers } from '../utils/types.js';
 
 type SectionType = {
@@ -28,8 +28,7 @@ export const PROJECT_LIST_PROMPT = {
     description: 'List of projects',
 };
 
-export const PROJECT_LIST_RPOMPT_HANDLER: PromptHandlers = {
-    projects_list: async () => {
+server.prompt(PROJECT_LIST_PROMPT.name, {}, async () => {
         const [projects, sections] = await Promise.all([
             todoistApi.get('/projects'),
             todoistApi.get('/sections'),
@@ -47,21 +46,21 @@ export const PROJECT_LIST_RPOMPT_HANDLER: PromptHandlers = {
         const markdownParts = [
             '# Todoist Projects Overview',
             '',
-            `*Total Projects: ${projects.length}*`,
+            `*Total Projects: ${ projects.length }*`,
             '',
         ];
 
         projects.forEach((project: Project) => {
             const projectSections = sectionsByProject[project.id] || [];
 
-            markdownParts.push(`## ${project.name}`);
+            markdownParts.push(`## ${ project.name }`);
 
             markdownParts.push('| Property | Value |');
             markdownParts.push('| -------- | ----- |');
-            markdownParts.push(`| ID | \`${project.id}\` |`);
-            markdownParts.push(`| Order | ${project.order} |`);
-            markdownParts.push(`| Parent ID | ${project.parent_id || 'None'} |`);
-            markdownParts.push(`| View Style | ${project.view_style} |`);
+            markdownParts.push(`| ID | \`${ project.id }\` |`);
+            markdownParts.push(`| Order | ${ project.order } |`);
+            markdownParts.push(`| Parent ID | ${ project.parent_id || 'None' } |`);
+            markdownParts.push(`| View Style | ${ project.view_style } |`);
 
             if (project.is_inbox_project) markdownParts.push(`| Status | Inbox Project |`);
             if (project.is_shared) markdownParts.push(`| Sharing | Shared |`);
@@ -71,19 +70,19 @@ export const PROJECT_LIST_RPOMPT_HANDLER: PromptHandlers = {
             if (project.description?.length > 0) {
                 const truncatedDescription =
                     project.description.length > 100
-                        ? `${project.description.substring(0, 100).split(' ').slice(0, -1).join(' ')}...`
+                        ? `${ project.description.substring(0, 100).split(' ').slice(0, -1).join(' ') }...`
                         : project.description;
 
-                markdownParts.push(`| Description | ${truncatedDescription} |`);
+                markdownParts.push(`| Description | ${ truncatedDescription } |`);
             }
 
             markdownParts.push('');
 
             if (projectSections.length > 0) {
-                markdownParts.push(`### Sections (${projectSections.length})`);
+                markdownParts.push(`### Sections (${ projectSections.length })`);
 
                 projectSections.forEach(section => {
-                    markdownParts.push(`- **${section.name}** (ID: \`${section.id}\`)`);
+                    markdownParts.push(`- **${ section.name }** (ID: \`${ section.id }\`)`);
                 });
             } else {
                 markdownParts.push('### Sections\n*No sections found*');
@@ -103,5 +102,5 @@ export const PROJECT_LIST_RPOMPT_HANDLER: PromptHandlers = {
                 },
             ],
         };
-    },
-};
+    }
+);
