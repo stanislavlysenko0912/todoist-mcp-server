@@ -2,6 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { log } from './helpers.js';
+import { SyncCommand } from './types.js';
 
 const API_BASE_URL = 'https://api.todoist.com/rest/v2';
 const API_SYNC_BASE_URL = 'https://api.todoist.com/sync/v9';
@@ -115,13 +116,7 @@ export class TodoistClient {
      * @param commands - Array of command objects to execute
      * @returns API response data
      */
-    async sync(
-        commands: Array<{
-            type: string;
-            uuid: string;
-            args: Record<string, any>;
-        }>
-    ): Promise<any> {
+    async sync(commands: Array<SyncCommand>): Promise<any> {
         const url = `${API_SYNC_BASE_URL}/sync`;
 
         log(`Making SYNC request to: ${url} with commands:`, JSON.stringify(commands, null, 2));

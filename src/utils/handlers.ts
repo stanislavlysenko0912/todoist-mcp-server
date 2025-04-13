@@ -1,54 +1,68 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { z } from 'zod';
-import { log, todoistApi } from './helpers.js';
-import { ToolResult } from './types.js';
+import { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+import { server, todoistApi } from '../clients.js';
+import { log } from './helpers.js';
+import { SyncCommand } from './types.js';
 
-const createHandler = <TSchema extends z.ZodType<any>, TResult>(
-    schema: TSchema,
-    handler: (args: z.infer<TSchema>) => Promise<TResult>,
-    errorPrefix: string
-) => {
-    return async (request: any): Promise<ToolResult> => {
+type HandlerArgs<T extends z.ZodRawShape> = z.objectOutputType<T, z.ZodTypeAny>;
+
+export function createHandler<T extends z.ZodRawShape>(
+    name: string,
+    description: string,
+    paramsSchema: T,
+    handler: (args: HandlerArgs<T>) => Promise<any>
+): void {
+    const mcpToolCallback = async (args: HandlerArgs<T>): Promise<CallToolResult> => {
         try {
-            // Validate the request parameters against the schema
-            const args = schema.parse(request.params.arguments);
-
-            // Call the handler function with the validated arguments
             const result = await handler(args);
 
             return {
                 content: [
                     {
                         type: 'text',
-                        text: JSON.stringify(result, null, 2).trim(),
+                        text: JSON.stringify(result ?? null, null, 2).trim(),
                     },
                 ],
             };
         } catch (error) {
-            throw new Error(
-                `${errorPrefix}: ${error instanceof Error ? error.message : String(error)}`
-            );
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            console.error(`Error in tool ${name}:`, error);
+
+            return {
+                isError: true,
+                content: [
+                    {
+                        type: 'text',
+                        text: `Error executing tool '${name}': ${errorMessage}`,
+                    },
+                ],
+            };
         }
     };
-};
+
+    // Crazy cast, if you can do it better, please, let me knows
+    server.tool(name, description, paramsSchema, mcpToolCallback as unknown as ToolCallback<T>);
+}
 
 type HttpMethod = 'GET' | 'POST' | 'DELETE';
 type ParamTransformer<T> = (args: T) => Record<string, any>;
 type ResultProcessor<T, R> = (result: any, args: T) => Promise<R> | R;
 
 export function createApiHandler<T extends z.ZodRawShape, R = any>(options: {
+    name: string;
+    description: string;
     schemaShape: T;
     method: HttpMethod;
     path: string;
-    errorPrefix: string;
     transformParams?: ParamTransformer<z.infer<z.ZodObject<T>>>;
     processResult?: ResultProcessor<z.infer<z.ZodObject<T>>, R>;
 }) {
-    const schema = z.object(options.schemaShape);
-
-    const handler = async (args: z.infer<typeof schema>): Promise<R> => {
+    const handler = async (args: z.infer<z.ZodObject<T>>): Promise<R> => {
         let finalPath = options.path;
         const pathParams: Record<string, string> = {};
 
@@ -102,18 +116,20 @@ export function createApiHandler<T extends z.ZodRawShape, R = any>(options: {
         return options.processResult ? options.processResult(result, args) : result;
     };
 
-    return createHandler(schema, handler, options.errorPrefix);
+    return createHandler(options.name, options.description, options.schemaShape, handler);
 }
 
 export function createBatchApiHandler<T extends z.ZodRawShape>(
     options: {
+        name: string;
+        description: string;
         itemSchema: T;
         method: HttpMethod;
-        errorPrefix: string;
         mode?: 'read' | 'create' | 'update' | 'delete';
         idField?: string;
         nameField?: string;
         findByName?: (name: string, items: any[]) => any | undefined;
+        validateItem?: (item: any) => { valid: boolean; error?: string };
     } & ( // Or we specify full path
         | {
               path: string;
@@ -128,9 +144,30 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
           }
     )
 ) {
-    const itemSchemaObj = z.object(options.itemSchema);
+    // Create basic description, we cant properly use 'anyOf' here so for now we will add info to description
+    let finalDescription = options.description;
+    const requiresIdOrName = options.idField && options.nameField && options.mode !== 'create';
+
+    if (requiresIdOrName) {
+        const requirementText = `\nEither '${options.idField}' or the '${options.nameField}' to identify the target.`;
+        finalDescription += requirementText;
+    }
+
+    const itemSchemaObject = z.object(options.itemSchema);
+
+    const enhancedItemSchema: z.ZodTypeAny = requiresIdOrName
+        ? itemSchemaObject.refine(
+              (data: any) =>
+                  data[options.idField!] !== undefined || data[options.nameField!] !== undefined,
+              {
+                  message: `Either ${options.idField} or ${options.nameField} must be provided`,
+                  path: [options.idField!, options.nameField!],
+              }
+          )
+        : itemSchemaObject;
+
     const batchSchema = z.object({
-        items: z.array(itemSchemaObj),
+        items: z.array(enhancedItemSchema),
     });
 
     const handler = async (args: z.infer<typeof batchSchema>): Promise<any> => {
@@ -155,6 +192,18 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
 
         const results = await Promise.all(
             items.map(async item => {
+                if (options.validateItem) {
+                    const validation = options.validateItem(item);
+
+                    if (!validation.valid) {
+                        return {
+                            success: false,
+                            error: validation.error || 'Validation failed',
+                            item,
+                        };
+                    }
+                }
+
                 try {
                     let finalPath = '';
                     const apiParams = { ...item };
@@ -272,13 +321,14 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
         };
     };
 
-    return createHandler(batchSchema, handler, options.errorPrefix);
+    return createHandler(options.name, finalDescription, batchSchema.shape, handler);
 }
 
 export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
+    name: string;
+    description: string;
     itemSchema: T;
     commandType: string; // The sync command type (e.g., 'item_move')
-    errorPrefix: string;
     idField: string;
     nameField?: string;
     lookupPath?: string; // Configurable path for lookup
@@ -286,9 +336,9 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
     buildCommandArgs: (item: any, itemId: string) => Record<string, any>;
     validateItem?: (item: any) => { valid: boolean; error?: string }; // Optional validation
 }) {
-    const itemSchemaObj = z.object(options.itemSchema);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const batchSchema = z.object({
-        items: z.array(itemSchemaObj),
+        items: z.array(z.object(options.itemSchema)),
     });
 
     const handler = async (args: z.infer<typeof batchSchema>): Promise<any> => {
@@ -305,16 +355,14 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
 
             if (needsNameLookup) {
                 if (!options.lookupPath) {
-                    throw new Error(
-                        `${options.errorPrefix}: lookupPath must be specified for name-based lookup`
-                    );
+                    throw new Error(`Error: lookupPath must be specified for name-based lookup`);
                 }
                 // Generic lookup path for any resource type
                 allItems = await todoistApi.get(options.lookupPath, {});
             }
 
             // Build commands array for Sync API
-            const commands = [];
+            const commands: SyncCommand[] = [];
             const failedItems = [];
 
             for (const item of items) {
@@ -415,5 +463,10 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
         }
     };
 
-    return createHandler(batchSchema, handler, options.errorPrefix);
+    return createHandler(
+        options.name,
+        options.description,
+        { items: z.array(z.object(options.itemSchema)) },
+        handler
+    );
 }
