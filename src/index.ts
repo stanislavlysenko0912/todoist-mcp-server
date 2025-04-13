@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { server } from './clients.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { server } from './clients.js';
 import { config, log } from './utils/helpers.js';
 
 import './prompts.js';
+import './tools.js';
 
 export async function main() {
     if (!config.API_KEY || config.API_KEY.length === 0) {
