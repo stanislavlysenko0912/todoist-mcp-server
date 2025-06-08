@@ -252,7 +252,7 @@ createHandler(
             completed_tasks: response.items || [],
             projects: response.projects || {},
             sections: response.sections || {},
-            total_count: response.items?.length || 0,
+            retrieved_count: response.items?.length || 0, // Renamed for clarity, represents items in this batch
             has_more: response.items?.length === args.limit,
         };
     }
