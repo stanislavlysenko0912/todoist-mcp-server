@@ -217,3 +217,43 @@ createSyncApiHandler({
         return { valid: true };
     },
 });
+
+import { createHandler } from '../utils/handlers.js';
+import { todoistApi } from '../clients.js';
+
+createHandler(
+    'get_completed_tasks',
+    'Get completed tasks from Todoist with filtering options',
+    {
+        project_id: z.string().optional().describe('Filter by specific project ID'),
+        section_id: z.string().optional().describe('Filter by specific section ID'),
+        parent_id: z.string().optional().describe('Filter by specific parent task ID'),
+        since: z.string().optional().describe('Return tasks completed since this date (YYYY-MM-DD format)'),
+        until: z.string().optional().describe('Return tasks completed until this date (YYYY-MM-DD format)'),
+        limit: z.number().int().min(1).max(200).optional().default(50).describe('Number of tasks to return (max 200)'),
+        offset: z.number().int().min(0).optional().describe('Offset for pagination'),
+        annotation_type: z.string().optional().describe('Filter by annotation type'),
+    },
+    async (args) => {
+        const params: Record<string, string> = {};
+        
+        if (args.project_id) params.project_id = args.project_id;
+        if (args.section_id) params.section_id = args.section_id;
+        if (args.parent_id) params.parent_id = args.parent_id;
+        if (args.since) params.since = args.since;
+        if (args.until) params.until = args.until;
+        if (args.limit) params.limit = args.limit.toString();
+        if (args.offset) params.offset = args.offset.toString();
+        if (args.annotation_type) params.annotation_type = args.annotation_type;
+
+        const response = await todoistApi.getCompletedTasks(params);
+
+        return {
+            completed_tasks: response.items || [],
+            projects: response.projects || {},
+            sections: response.sections || {},
+            total_count: response.items?.length || 0,
+            has_more: response.items?.length === args.limit,
+        };
+    }
+);
