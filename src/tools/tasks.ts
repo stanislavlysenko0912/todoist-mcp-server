@@ -4,6 +4,8 @@ import {
     createBatchApiHandler,
     createSyncApiHandler,
 } from '../utils/handlers.js';
+import { createHandler } from '../utils/handlers.js';
+import { todoistApi } from '../clients.js';
 
 /// Common fields for create and update tasks
 const create_fields = {
@@ -218,9 +220,6 @@ createSyncApiHandler({
     },
 });
 
-import { createHandler } from '../utils/handlers.js';
-import { todoistApi } from '../clients.js';
-
 createHandler(
     'get_completed_tasks',
     'Get completed tasks from Todoist with filtering options',
@@ -236,15 +235,12 @@ createHandler(
     },
     async (args) => {
         const params: Record<string, string> = {};
-        
-        if (args.project_id) params.project_id = args.project_id;
-        if (args.section_id) params.section_id = args.section_id;
-        if (args.parent_id) params.parent_id = args.parent_id;
-        if (args.since) params.since = args.since;
-        if (args.until) params.until = args.until;
-        if (args.limit) params.limit = args.limit.toString();
-        if (args.offset) params.offset = args.offset.toString();
-        if (args.annotation_type) params.annotation_type = args.annotation_type;
+
+        Object.entries(args).forEach(([key, value]) => {
+            if (value !== undefined) {
+                params[key] = typeof value === 'number' ? value.toString() : value;
+            }
+        });
 
         const response = await todoistApi.getCompletedTasks(params);
 
@@ -252,8 +248,7 @@ createHandler(
             completed_tasks: response.items || [],
             projects: response.projects || {},
             sections: response.sections || {},
-            retrieved_count: response.items?.length || 0, // Renamed for clarity, represents items in this batch
-            has_more: response.items?.length === args.limit,
+            total: response.items?.length || 0,
         };
     }
 );

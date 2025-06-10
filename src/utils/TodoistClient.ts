@@ -135,8 +135,9 @@ export class TodoistClient {
      * @param params - Query parameters for filtering completed tasks
      * @returns API response data with completed tasks
      */
-    async getCompletedTasks(params: Record<string, string> = {}): Promise<TodoistCompletedTasksResponse> {
+    async getCompletedTasks(params: Record<string, string> = {}): Promise<any> {
         const url = `${API_SYNC_BASE_URL}/completed/get_all`;
+
 
         log(`Making completed tasks request to: ${url} with params:`, JSON.stringify(params, null, 2));
 
