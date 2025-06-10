@@ -4,6 +4,8 @@ import {
     createBatchApiHandler,
     createSyncApiHandler,
 } from '../utils/handlers.js';
+import { createHandler } from '../utils/handlers.js';
+import { todoistApi } from '../clients.js';
 
 /// Common fields for create and update tasks
 const create_fields = {
@@ -217,3 +219,36 @@ createSyncApiHandler({
         return { valid: true };
     },
 });
+
+createHandler(
+    'get_completed_tasks',
+    'Get completed tasks from Todoist with filtering options',
+    {
+        project_id: z.string().optional().describe('Filter by specific project ID'),
+        section_id: z.string().optional().describe('Filter by specific section ID'),
+        parent_id: z.string().optional().describe('Filter by specific parent task ID'),
+        since: z.string().optional().describe('Return tasks completed since this date (YYYY-MM-DD format)'),
+        until: z.string().optional().describe('Return tasks completed until this date (YYYY-MM-DD format)'),
+        limit: z.number().int().min(1).max(200).optional().default(50).describe('Number of tasks to return (max 200)'),
+        offset: z.number().int().min(0).optional().describe('Offset for pagination'),
+        annotation_type: z.string().optional().describe('Filter by annotation type'),
+    },
+    async (args) => {
+        const params: Record<string, string> = {};
+
+        Object.entries(args).forEach(([key, value]) => {
+            if (value !== undefined) {
+                params[key] = typeof value === 'number' ? value.toString() : value;
+            }
+        });
+
+        const response = await todoistApi.getCompletedTasks(params);
+
+        return {
+            completed_tasks: response.items || [],
+            projects: response.projects || {},
+            sections: response.sections || {},
+            total: response.items?.length || 0,
+        };
+    }
+);

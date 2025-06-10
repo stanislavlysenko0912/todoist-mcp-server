@@ -129,4 +129,35 @@ export class TodoistClient {
 
         return this.handleResponse(response);
     }
+
+    /**
+     * Get completed tasks using Sync API
+     * @param params - Query parameters for filtering completed tasks
+     * @returns API response data with completed tasks
+     */
+    async getCompletedTasks(params: Record<string, string> = {}): Promise<any> {
+        const url = `${API_SYNC_BASE_URL}/completed/get_all`;
+
+
+        log(`Making completed tasks request to: ${url} with params:`, JSON.stringify(params, null, 2));
+
+        const formData = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                formData.append(key, value);
+            }
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${this.apiToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Request-Id': uuidv4(),
+            },
+            body: formData.toString(),
+        });
+
+        return this.handleResponse(response);
+    }
 }
