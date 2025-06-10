@@ -138,8 +138,10 @@ export class TodoistClient {
     async getCompletedTasks(params: Record<string, string> = {}): Promise<any> {
         const url = `${API_SYNC_BASE_URL}/completed/get_all`;
 
-
-        log(`Making completed tasks request to: ${url} with params:`, JSON.stringify(params, null, 2));
+        log(
+            `Making completed tasks request to: ${url} with params:`,
+            JSON.stringify(params, null, 2)
+        );
 
         const formData = new URLSearchParams();
         for (const [key, value] of Object.entries(params)) {

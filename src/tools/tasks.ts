@@ -227,13 +227,26 @@ createHandler(
         project_id: z.string().optional().describe('Filter by specific project ID'),
         section_id: z.string().optional().describe('Filter by specific section ID'),
         parent_id: z.string().optional().describe('Filter by specific parent task ID'),
-        since: z.string().optional().describe('Return tasks completed since this date (YYYY-MM-DD format)'),
-        until: z.string().optional().describe('Return tasks completed until this date (YYYY-MM-DD format)'),
-        limit: z.number().int().min(1).max(200).optional().default(50).describe('Number of tasks to return (max 200)'),
+        since: z
+            .string()
+            .optional()
+            .describe('Return tasks completed since this date (YYYY-MM-DD format)'),
+        until: z
+            .string()
+            .optional()
+            .describe('Return tasks completed until this date (YYYY-MM-DD format)'),
+        limit: z
+            .number()
+            .int()
+            .min(1)
+            .max(200)
+            .optional()
+            .default(50)
+            .describe('Number of tasks to return (max 200)'),
         offset: z.number().int().min(0).optional().describe('Offset for pagination'),
         annotation_type: z.string().optional().describe('Filter by annotation type'),
     },
-    async (args) => {
+    async args => {
         const params: Record<string, string> = {};
 
         Object.entries(args).forEach(([key, value]) => {
