@@ -79,7 +79,20 @@ export function createApiHandler<T extends z.ZodRawShape, R = any>(options: {
             }
 
             const paramValue = String(args[paramName]);
-            finalPath = finalPath.replace(fullMatch, paramValue);
+            
+            // Security fix: Validate path parameters to prevent path traversal
+            if (/[/\\]|\.\./.test(paramValue)) {
+                throw new Error(`Invalid characters in path parameter '${paramName}': Path traversal characters are not allowed`);
+            }
+            
+            // Additional validation: Todoist IDs should be numeric or alphanumeric
+            // This provides defense in depth
+            if (!/^[a-zA-Z0-9_-]+$/.test(paramValue)) {
+                throw new Error(`Invalid path parameter '${paramName}': Only alphanumeric characters, underscores, and hyphens are allowed`);
+            }
+            
+            // Use URL encoding to ensure special characters are properly escaped
+            finalPath = finalPath.replace(fullMatch, encodeURIComponent(paramValue));
             pathParams[paramName] = paramValue;
         }
 
