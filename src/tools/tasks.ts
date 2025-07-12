@@ -48,6 +48,14 @@ const create_fields = {
         .describe(
             'The unit of time that the duration field represents. Must be either minute or day'
         ),
+    deadline_date: z
+        .string()
+        .optional()
+        .describe('Specific date in YYYY-MM-DD format relative to user timezone'),
+    deadline_lang: z
+        .string()
+        .optional()
+        .describe('2-letter code specifying language of deadline'),
 };
 
 createApiHandler({
