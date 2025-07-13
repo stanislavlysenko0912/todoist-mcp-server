@@ -10,6 +10,29 @@ import { SyncCommand } from './types.js';
 
 type HandlerArgs<T extends z.ZodRawShape> = z.objectOutputType<T, z.ZodTypeAny>;
 
+/**
+ * Validates path parameters to prevent path traversal attacks
+ * @param value - The parameter value to validate
+ * @param paramName - The name of the parameter (for error messages)
+ * @returns The URL-encoded safe value
+ * @throws Error if validation fails
+ */
+function validatePathParameter(value: string, paramName: string): string {
+    const stringValue = String(value);
+    
+    // Check for path traversal characters
+    if (/[/\\]|\.\./.test(stringValue)) {
+        throw new Error(`Invalid characters in path parameter '${paramName}': Path traversal characters are not allowed`);
+    }
+    
+    // Ensure only safe alphanumeric characters, underscores, and hyphens
+    if (!/^[a-zA-Z0-9_-]+$/.test(stringValue)) {
+        throw new Error(`Invalid path parameter '${paramName}': Only alphanumeric characters, underscores, and hyphens are allowed`);
+    }
+    
+    return encodeURIComponent(stringValue);
+}
+
 export function createHandler<T extends z.ZodRawShape>(
     name: string,
     description: string,
@@ -78,9 +101,10 @@ export function createApiHandler<T extends z.ZodRawShape, R = any>(options: {
                 throw new Error(`Path parameter ${paramName} is required but not provided`);
             }
 
-            const paramValue = String(args[paramName]);
-            finalPath = finalPath.replace(fullMatch, paramValue);
-            pathParams[paramName] = paramValue;
+            // Validate and encode path parameter using the centralized security function
+            const safeParamValue = validatePathParameter(args[paramName], paramName);
+            finalPath = finalPath.replace(fullMatch, safeParamValue);
+            pathParams[paramName] = String(args[paramName]);
         }
 
         // Collect non-path parameters for query string or request body
@@ -240,10 +264,13 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
                             };
                         }
 
+                        // Apply security validation to itemId before using in path
+                        const safeItemId = validatePathParameter(itemId, options.idField || 'id');
+                        
                         if (options.basePath && options.pathSuffix) {
-                            finalPath = `${options.basePath}${options.pathSuffix.replace('{id}', itemId)}`;
+                            finalPath = `${options.basePath}${options.pathSuffix.replace('{id}', safeItemId)}`;
                         } else if (options.path) {
-                            finalPath = options.path.replace('{id}', itemId);
+                            finalPath = options.path.replace('{id}', safeItemId);
                         }
 
                         delete apiParams[options.idField];
@@ -407,8 +434,11 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
                     continue;
                 }
 
-                // Use the provided function to build command args
-                const commandArgs = options.buildCommandArgs(item, itemId);
+                // Apply security validation to itemId before using in sync commands
+                const safeItemId = validatePathParameter(itemId, options.idField);
+                
+                // Use the provided function to build command args with validated ID
+                const commandArgs = options.buildCommandArgs(item, safeItemId);
 
                 commands.push({
                     type: options.commandType,
