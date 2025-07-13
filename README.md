@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/stanislavlysenko0912-todoist-mcp-server-badge.png)](https://mseep.ai/app/stanislavlysenko0912-todoist-mcp-server)
+
 <div align="center">
     <img src="https://img.icons8.com/color/200/todoist.png" width="120"/>
     <h1>Todoist MCP Server</h1>
