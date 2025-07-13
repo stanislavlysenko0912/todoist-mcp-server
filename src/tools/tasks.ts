@@ -24,7 +24,12 @@ const create_fields = {
         .describe(
             'Human defined task due date (ex.: "next Monday", "Tomorrow"). Value is set using local (not UTC) time, if not in english provided, due_lang should be set to the language of the string'
         ),
-    due_date: z.string().optional().describe('Due date in YYYY-MM-DD format relative to user timezone (when you plan to work on task)'),
+    due_date: z
+        .string()
+        .optional()
+        .describe(
+            'Due date in YYYY-MM-DD format relative to user timezone (when you plan to work on task)'
+        ),
     due_datetime: z.string().optional().describe('Specific date and time in RFC3339 format in UTC'),
     due_lang: z
         .string()
@@ -51,11 +56,10 @@ const create_fields = {
     deadline_date: z
         .string()
         .optional()
-        .describe('Deadline date in YYYY-MM-DD format relative to user timezone (fixed date when task must be completed, for tasks with external consequences)'),
-    deadline_lang: z
-        .string()
-        .optional()
-        .describe('2-letter code specifying language of deadline'),
+        .describe(
+            'Deadline date in YYYY-MM-DD format relative to user timezone (fixed date when task must be completed, for tasks with external consequences)'
+        ),
+    deadline_lang: z.string().optional().describe('2-letter code specifying language of deadline'),
 };
 
 createApiHandler({

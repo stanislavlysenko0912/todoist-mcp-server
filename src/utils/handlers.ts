@@ -19,17 +19,21 @@ type HandlerArgs<T extends z.ZodRawShape> = z.objectOutputType<T, z.ZodTypeAny>;
  */
 function validatePathParameter(value: string, paramName: string): string {
     const stringValue = String(value);
-    
+
     // Check for path traversal characters
     if (/[/\\]|\.\./.test(stringValue)) {
-        throw new Error(`Invalid characters in path parameter '${paramName}': Path traversal characters are not allowed`);
+        throw new Error(
+            `Invalid characters in path parameter '${paramName}': Path traversal characters are not allowed`
+        );
     }
-    
+
     // Ensure only safe alphanumeric characters, underscores, and hyphens
     if (!/^[a-zA-Z0-9_-]+$/.test(stringValue)) {
-        throw new Error(`Invalid path parameter '${paramName}': Only alphanumeric characters, underscores, and hyphens are allowed`);
+        throw new Error(
+            `Invalid path parameter '${paramName}': Only alphanumeric characters, underscores, and hyphens are allowed`
+        );
     }
-    
+
     return encodeURIComponent(stringValue);
 }
 
@@ -266,7 +270,7 @@ export function createBatchApiHandler<T extends z.ZodRawShape>(
 
                         // Apply security validation to itemId before using in path
                         const safeItemId = validatePathParameter(itemId, options.idField || 'id');
-                        
+
                         if (options.basePath && options.pathSuffix) {
                             finalPath = `${options.basePath}${options.pathSuffix.replace('{id}', safeItemId)}`;
                         } else if (options.path) {
@@ -436,7 +440,7 @@ export function createSyncApiHandler<T extends z.ZodRawShape>(options: {
 
                 // Apply security validation to itemId before using in sync commands
                 const safeItemId = validatePathParameter(itemId, options.idField);
-                
+
                 // Use the provided function to build command args with validated ID
                 const commandArgs = options.buildCommandArgs(item, safeItemId);
 
