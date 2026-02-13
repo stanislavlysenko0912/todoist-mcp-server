@@ -238,14 +238,21 @@ createHandler(
     {
         since: z
             .string()
-            .describe('Start of completion date range (ISO 8601 date-time, e.g. "2025-01-01T00:00:00Z")'),
+            .describe(
+                'Start of completion date range (ISO 8601 date-time, e.g. "2025-01-01T00:00:00Z")'
+            ),
         until: z
             .string()
-            .describe('End of completion date range (ISO 8601 date-time, e.g. "2025-03-31T23:59:59Z")'),
+            .describe(
+                'End of completion date range (ISO 8601 date-time, e.g. "2025-03-31T23:59:59Z")'
+            ),
         project_id: z.string().optional().describe('Filter by specific project ID'),
         section_id: z.string().optional().describe('Filter by specific section ID'),
         parent_id: z.string().optional().describe('Filter by specific parent task ID'),
-        cursor: z.string().optional().describe('Cursor for pagination (from next_cursor in previous response)'),
+        cursor: z
+            .string()
+            .optional()
+            .describe('Cursor for pagination (from next_cursor in previous response)'),
         limit: z
             .number()
             .int()
