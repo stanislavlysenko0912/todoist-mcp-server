@@ -4,8 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { log } from './helpers.js';
 import { SyncCommand } from './types.js';
 
-const API_BASE_URL = 'https://api.todoist.com/rest/v2';
-const API_SYNC_BASE_URL = 'https://api.todoist.com/sync/v9';
+const API_BASE_URL = 'https://api.todoist.com/api/v1';
 
 export class TodoistClient {
     private readonly apiToken: string;
@@ -70,7 +69,14 @@ export class TodoistClient {
             headers: this.getHeaders(),
         });
 
-        return this.handleResponse(response);
+        const data = await this.handleResponse(response);
+
+        // API v1 wraps list responses in { results: [...] }
+        if (data && typeof data === 'object' && Array.isArray(data.results)) {
+            return data.results;
+        }
+
+        return data;
     }
 
     /**
@@ -117,7 +123,7 @@ export class TodoistClient {
      * @returns API response data
      */
     async sync(commands: Array<SyncCommand>): Promise<any> {
-        const url = `${API_SYNC_BASE_URL}/sync`;
+        const url = `${API_BASE_URL}/sync`;
 
         log(`Making SYNC request to: ${url} with commands:`, JSON.stringify(commands, null, 2));
 
@@ -131,35 +137,11 @@ export class TodoistClient {
     }
 
     /**
-     * Get completed tasks using Sync API
+     * Get completed tasks via REST API
      * @param params - Query parameters for filtering completed tasks
      * @returns API response data with completed tasks
      */
     async getCompletedTasks(params: Record<string, string> = {}): Promise<any> {
-        const url = `${API_SYNC_BASE_URL}/completed/get_all`;
-
-        log(
-            `Making completed tasks request to: ${url} with params:`,
-            JSON.stringify(params, null, 2)
-        );
-
-        const formData = new URLSearchParams();
-        for (const [key, value] of Object.entries(params)) {
-            if (value) {
-                formData.append(key, value);
-            }
-        }
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${this.apiToken}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Request-Id': uuidv4(),
-            },
-            body: formData.toString(),
-        });
-
-        return this.handleResponse(response);
+        return this.get('/tasks/completed/by_completion_date', params);
     }
 }
