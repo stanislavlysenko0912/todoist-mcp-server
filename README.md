@@ -32,22 +32,41 @@ You'll need a Todoist API token to use this MCP server.
 2. Navigate to Settings → Integrations
 3. Find your API token under "Developer"
 
-### Usage with Claude Desktop
+### Usage
 
-Add to your `claude_desktop_config.json`:
+Add to `mcpServers` in your platform config:
 
 ```json
-{
-    "mcpServers": {
-        "todoist": {
-            "command": "npx",
-            "args": ["-y", "todoist-mcp"],
-            "env": {
-                "API_KEY": "your_todoist_api_token_here"
-            }
-        }
-    }
+"todoist": {
+    "command": "npx",
+    "args": ["-y", "todoist-mcp"],
+    "env": { "API_KEY": "your_todoist_api_token" }
 }
+```
+
+| Platform | Config |
+|----------|--------|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS), `%APPDATA%\Claude\` (Windows) |
+| Claude Code | `.mcp.json` — `claude mcp add --transport stdio --scope project --env API_KEY=token todoist -- npx -y todoist-mcp` |
+| Cursor | `~/.cursor/mcp.json` or `.cursor/mcp.json` |
+| Codex | `~/.codex/config.toml` or `.codex/config.toml` — see example below |
+| Gemini CLI | `~/.gemini/settings.json` — `gemini mcp add -e API_KEY=token todoist npx -y todoist-mcp` |
+
+**Codex** — CLI:
+
+```bash
+codex mcp add todoist --env API_KEY=your_token -- npx -y todoist-mcp
+```
+
+Or add to `config.toml`:
+
+```toml
+[mcp_servers.todoist]
+command = "npx"
+args = ["-y", "todoist-mcp"]
+
+[mcp_servers.todoist.env]
+API_KEY = "your_todoist_api_token"
 ```
 
 ## Available Tools
