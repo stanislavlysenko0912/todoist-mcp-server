@@ -1,10 +1,6 @@
-import { CallToolRequestSchema, Result } from '@modelcontextprotocol/sdk/types.js';
-import z from 'zod';
+import { CallToolRequest, Result } from '@modelcontextprotocol/sdk/types.js';
 
-export type ToolHandlers = Record<
-    string,
-    (request: z.infer<typeof CallToolRequestSchema>) => Promise<Result>
->;
+export type ToolHandlers = Record<string, (request: CallToolRequest) => Promise<Result>>;
 
 export type ToolResult = {
     content: Array<{ type: string; text: string }>;

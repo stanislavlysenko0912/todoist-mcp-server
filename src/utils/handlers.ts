@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -72,8 +71,8 @@ export function createHandler<T extends z.ZodRawShape>(
         }
     };
 
-    // Crazy cast, if you can do it better, please, let me knows
-    server.tool(name, description, paramsSchema, mcpToolCallback as unknown as ToolCallback<T>);
+    // Cast needed: SDK uses Zod 4 types internally, project uses Zod 3
+    (server.tool as any)(name, description, paramsSchema, mcpToolCallback);
 }
 
 type HttpMethod = 'GET' | 'POST' | 'DELETE';
