@@ -64,22 +64,32 @@ const create_fields = {
 
 createApiHandler({
     name: 'get_tasks_list',
-    description: 'Get tasks list from Todoist',
+    description: 'Get tasks list from Todoist. For advanced filtering use get_tasks_by_filter tool',
     schemaShape: {
         project_id: z.string().optional().describe('Filter by project'),
         section_id: z.string().optional().describe('Filter by section'),
         label: z.string().optional().describe('Filter by label'),
-        filter: z
-            .string()
-            .optional()
-            .describe(
-                'Natural language english filter like "search: keyword", "today", "date before: +4 hours", "date after: May 5", "no date", "no time", "overdue", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "P1 | P2", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "Today & !#Work"'
-            ),
         ids: z.string().optional().describe('Comma-separated list of task IDs'),
         limit: z.number().optional().default(50),
     },
     method: 'GET',
     path: '/tasks',
+});
+
+createApiHandler({
+    name: 'get_tasks_by_filter',
+    description:
+        'Get tasks from Todoist using filter language. Use for queries like "today", "overdue", "P1", date-based filters, label/project filters in query syntax',
+    schemaShape: {
+        query: z
+            .string()
+            .describe(
+                'Todoist filter query. Examples: "today", "overdue", "today | overdue", "no date", "no time", "P1 | P2", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "search: keyword"'
+            ),
+        limit: z.number().optional().default(50),
+    },
+    method: 'GET',
+    path: '/tasks/filter',
 });
 
 createBatchApiHandler({
