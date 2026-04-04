@@ -73,7 +73,8 @@ API_KEY = "your_todoist_api_token"
 
 ### Tasks
 
-- `get_tasks_list`: Get tasks with optional filtering by project, section, label, etc.
+- `get_tasks_list`: Get tasks with optional filtering by project, section, label, or IDs
+- `get_tasks_by_filter`: Get tasks using Todoist filter language (e.g. `"today"`, `"overdue"`, `"P1 | P2"`, `"#Work & @urgent"`)
 - `create_tasks`: Create new tasks with various attributes
 - `get_tasks`: Get specific tasks by ID or name
 - `update_tasks`: Update existing tasks
