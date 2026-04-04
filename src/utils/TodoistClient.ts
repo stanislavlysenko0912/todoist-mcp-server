@@ -71,8 +71,11 @@ export class TodoistClient {
 
         const data = await this.handleResponse(response);
 
-        // API v1 wraps list responses in { results: [...] }
+        // API v1 wraps list responses in { results: [...], next_cursor: ... }
         if (data && typeof data === 'object' && Array.isArray(data.results)) {
+            if (data.next_cursor) {
+                return { results: data.results, next_cursor: data.next_cursor };
+            }
             return data.results;
         }
 

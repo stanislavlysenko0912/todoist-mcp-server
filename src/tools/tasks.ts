@@ -70,6 +70,10 @@ createApiHandler({
         section_id: z.string().optional().describe('Filter by section'),
         label: z.string().optional().describe('Filter by label'),
         ids: z.string().optional().describe('Comma-separated list of task IDs'),
+        cursor: z
+            .string()
+            .optional()
+            .describe('Cursor for pagination (from next_cursor in previous response)'),
         limit: z.number().optional().default(50),
     },
     method: 'GET',
@@ -86,6 +90,10 @@ createApiHandler({
             .describe(
                 'Todoist filter query. Examples: "today", "overdue", "today | overdue", "no date", "no time", "P1 | P2", "7 days & @waiting", "created before: -365 days", "assigned to: person", "added by: me", "#Project & !assigned", "subtask", "!subtask", "today & @email", "@work | @office", "(today | overdue) & #Work", "all & 7 days", "!assigned", "search: keyword"'
             ),
+        cursor: z
+            .string()
+            .optional()
+            .describe('Cursor for pagination (from next_cursor in previous response)'),
         limit: z.number().optional().default(50),
     },
     method: 'GET',
