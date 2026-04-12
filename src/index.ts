@@ -15,7 +15,6 @@ export async function main() {
     }
 
     try {
-         
         (server.server as unknown as { _instructions: string })._instructions =
             await buildInstructions();
 
