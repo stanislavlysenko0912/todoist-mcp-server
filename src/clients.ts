@@ -10,6 +10,6 @@ export const server = new McpServer(
         version,
     },
     {
-        instructions: 'Use this server to interact with Todoist API.\n\nNotes:\n- Todoist API priority is inverted — pass 4 for P1 (urgent), 1 for P4 (normal)',
+        instructions: 'Use this server to interact with Todoist API',
     }
 );

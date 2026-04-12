@@ -20,6 +20,7 @@
 - **Projects**: Create and manage projects and sections
 - **Comments**: Add and manage comments on tasks and projects
 - **Labels**: Create and manage personal and shared labels
+- **Smart Context**: On startup, automatically provides your projects and labels to the AI via server instructions — no extra tool calls needed
 - **Prompt Support**: You can easily provide information about your projects to client
 
 ## Configuration

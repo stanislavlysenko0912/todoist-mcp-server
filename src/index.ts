@@ -3,6 +3,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { server } from './clients.js';
 import { config, log } from './utils/helpers.js';
+import { buildInstructions } from './utils/instructions.js';
 
 import './prompts.js';
 import './tools.js';
@@ -14,6 +15,10 @@ export async function main() {
     }
 
     try {
+         
+        (server.server as unknown as { _instructions: string })._instructions =
+            await buildInstructions();
+
         const transport = new StdioServerTransport();
         await server.connect(transport);
 

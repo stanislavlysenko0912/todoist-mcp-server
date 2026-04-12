@@ -17,7 +17,15 @@ const create_fields = {
         .optional()
         .describe('Description (detailed). May contain markdown-formatted text and hyperlinks'),
     labels: z.array(z.string()).optional(),
-    priority: z.number().int().min(1).max(4).optional().describe('Todoist API priority (1-4): pass 4 when the user says "P1" or "highest priority", and pass 1 for "P4" or lowest priority'),
+    priority: z
+        .number()
+        .int()
+        .min(1)
+        .max(4)
+        .optional()
+        .describe(
+            'Todoist API priority (1-4): pass 4 when the user says "P1" or "highest priority", and pass 1 for "P4" or lowest priority'
+        ),
     due_string: z
         .string()
         .optional()
